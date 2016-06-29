@@ -143,7 +143,7 @@
 	<bean
 	  id="oauth20WrapperController"
 	  class="org.jasig.cas.support.oauth.web.OAuth20WrapperController"
-	  p:loginUrl="http://accounts.wavity.com:8080/auth/login"
+	  p:loginUrl="http://accounts.wavity.net/auth/login"
 	  p:servicesManager-ref="servicesManager"
 	  p:ticketRegistry-ref="ticketRegistry"
 	  p:timeout="7200" />

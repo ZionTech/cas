@@ -38,7 +38,6 @@
     <util:map id="authenticationHandlersResolvers">
         <entry key-ref="proxyAuthenticationHandler" value-ref="proxyPrincipalResolver" />
          <entry key-ref="ldapAuthenticationHandler" value="#{null}" />
-         <entry key-ref="tokenAuthenticationHandler" value="#{null}" />
     </util:map>
     <util:list id="authenticationMetadataPopulators" />
 
@@ -46,7 +45,6 @@
           p:backingMap-ref="attrRepoBackingMap" />
 
     <alias name="acceptUsersAuthenticationHandler" alias="primaryAuthenticationHandler" />
-    <alias name="tokenAuthenticationHandler" alias="primaryAuthenticationHandler" />
     <alias name="personDirectoryPrincipalResolver" alias="primaryPrincipalResolver" />
     
     <util:map id="attrRepoBackingMap">

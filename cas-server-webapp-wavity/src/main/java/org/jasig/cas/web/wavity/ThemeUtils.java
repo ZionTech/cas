@@ -82,7 +82,7 @@ public final class ThemeUtils {
 			final String type) {
 		final Hashtable<String, String> env = new Hashtable<String, String>(11);
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-		env.put(Context.PROVIDER_URL, "ldap://192.168.2.27:389");
+		env.put(Context.PROVIDER_URL, "ldap://wavitydevelopmentldap:389");
 		env.put("java.naming.ldap.attributes.binary", "jpegPhoto;portalBranding;binary");// 104
 		LdapContext ctx = null;
 		final String ldapSearchBase;

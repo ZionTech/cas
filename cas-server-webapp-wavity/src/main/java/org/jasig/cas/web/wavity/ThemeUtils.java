@@ -103,7 +103,7 @@ public final class ThemeUtils {
 			SearchResult searchResult = searchImage(ctx, searchControls, ldapSearchBase, searchFilter);
 			
 
-				searchResult = searchImage(ctx, searchControls, ldapSearchBase, searchFilter);
+				
 				if (searchResult == null) {
 					return null;
 				}

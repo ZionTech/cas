@@ -101,22 +101,14 @@ public final class ThemeUtils {
 			ctx = new InitialLdapContext(env, null);
 
 			SearchResult searchResult = searchImage(ctx, searchControls, ldapSearchBase, searchFilter);
-			if (searchResult == null) {
-				env.put("java.naming.ldap.attributes.binary", "jpegPhoto;primary;binary");
-				ctx = new InitialLdapContext(env, null);
-				searchFilter = "jpegPhoto;primary;binary=*";
-				searchControls = new SearchControls();
-				searchControls.setSearchScope(SearchControls.OBJECT_SCOPE);
+			
 
 				searchResult = searchImage(ctx, searchControls, ldapSearchBase, searchFilter);
 				if (searchResult == null) {
 					return null;
 				}
-
-				LOG.info("Portal Branding image is not available .fetching the binary image");
-				return buildImage(searchResult, "jpegPhoto;primary;binary");
-
-			} else {
+			
+			else {
 				LOG.info("portal branding image is availabel so fecting that image");
 				return buildImage(searchResult, "jpegPhoto;portalBranding;binary");
 			}

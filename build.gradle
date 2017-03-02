@@ -275,7 +275,6 @@ subprojects {
 		compile (group: 'org.slf4j', name: 'slf4j-api', version: project.versions.slf4jVersion)
         
         // wavity
-	compile (group: 'wavity-kms', name: 'wavity-kms', version: project.versions.wavityKmsVersion)
         compile (group: 'wavity-dependency', name: 'wavity-dependency', version: project.versions.wavityDependencyVersion) {
         	transitive = true
 			exclude group: 'javax.json', module: 'javax.json-api'

@@ -4,6 +4,7 @@
 
 package org.jasig.cas.util;
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -14,8 +15,14 @@ public class EncryptationAwarePropertyPlaceholderConfigurer extends PropertyPlac
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Override
-	protected String convertPropertyValue(String originalValue) {
-	        return decrypt(originalValue);
+	protected String convertPropertyValue(String originalValue) throws IllegalArgumentException{
+		try {
+			return decrypt(originalValue);
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+			logger.error("Error occured while decripting the give value {}", e);
+			throw new IllegalArgumentException(e); 
+		}		
 	}
 	
     /**
@@ -23,14 +30,16 @@ public class EncryptationAwarePropertyPlaceholderConfigurer extends PropertyPlac
      * 
      * @param ciphertext
      * @return The decrypted value.
+     * @throws IllegalArgumentException 
      */
-    private String decrypt(String ciphertext) 
+    private String decrypt(String ciphertext) throws IllegalArgumentException 
 	{
     	try {
     		ciphertext = AWS.getAWSKeyManager().decrypt(ciphertext);
 		} catch (Exception e) {
 			e.printStackTrace();
-			logger.error("Error occured while decripting the give value {}", e);
+			logger.error("Error occured while decripting the give value {}"+ciphertext, e);
+			throw new IllegalArgumentException(e); 
 		}
 	    return ciphertext;
 	}

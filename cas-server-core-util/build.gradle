@@ -21,6 +21,7 @@ dependencies {
     compile(group: 'org.bitbucket.b_c', name: 'jose4j', version:jose4jVersion) {
         exclude(module: 'slf4j-api')
     }
+    compile group: 'wavity-kms', name: 'wavity-kms', version: project.versions.wavityKmsVersion
     compile group: 'com.google.guava', name: 'guava', version:guavaVersion
     compile group: 'commons-io', name: 'commons-io', version:commonsIoVersion
     compile(group: 'org.apache.httpcomponents', name: 'httpclient', version:httpclientVersion) {

@@ -15,6 +15,7 @@ import org.ldaptive.auth.AuthenticationResultCode;
 import org.ldaptive.auth.Authenticator;
 
 import javax.annotation.PostConstruct;
+import javax.security.auth.login.AccountLockedException;
 import javax.security.auth.login.AccountNotFoundException;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
@@ -184,6 +185,9 @@ public class LdapAuthenticationHandler extends AbstractUsernamePasswordAuthentic
         if (AuthenticationResultCode.DN_RESOLUTION_FAILURE == response.getAuthenticationResultCode()) {
             logger.warn("DN resolution failed. {}", response.getMessage());
             throw new AccountNotFoundException(upc.getUsername() + " not found.");
+        }
+        if(response.getMessage().contains("the account has been locked due to too many failed authentication attempts")){
+        	throw new AccountLockedException("This account has been locked");
         }
         throw new FailedLoginException("Invalid credentials");
     }

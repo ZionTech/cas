@@ -2,6 +2,8 @@ package org.jasig.cas.authentication;
 
 import com.google.common.base.Functions;
 import com.google.common.collect.Maps;
+
+import org.jasig.cas.CasViewConstants;
 import org.jasig.cas.authentication.handler.support.AbstractUsernamePasswordAuthenticationHandler;
 import org.jasig.cas.authentication.principal.Principal;
 import org.jasig.cas.authentication.support.LdapPasswordPolicyConfiguration;
@@ -186,8 +188,8 @@ public class LdapAuthenticationHandler extends AbstractUsernamePasswordAuthentic
             logger.warn("DN resolution failed. {}", response.getMessage());
             throw new AccountNotFoundException(upc.getUsername() + " not found.");
         }
-        if(response.getMessage().contains("the account has been locked due to too many failed authentication attempts")){
-        	throw new AccountLockedException("This account has been locked");
+        if(response.getMessage().contains(CasViewConstants.ACCOUNT_TEMPORARY_LOCKED_MESSAGE)){
+        	throw new AccountLockedException();
         }
         throw new FailedLoginException("Invalid credentials");
     }

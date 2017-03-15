@@ -188,7 +188,7 @@ public class LdapAuthenticationHandler extends AbstractUsernamePasswordAuthentic
             logger.warn("DN resolution failed. {}", response.getMessage());
             throw new AccountNotFoundException(upc.getUsername() + " not found.");
         }
-        if(response.getMessage().contains(CasViewConstants.ACCOUNT_TEMPORARY_LOCKED_MESSAGE)){
+        if(response.getMessage() != null && response.getMessage().contains(CasViewConstants.ACCOUNT_TEMPORARY_LOCKED_MESSAGE)){
         	throw new AccountLockedException();
         }
         throw new FailedLoginException("Invalid credentials");

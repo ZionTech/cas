@@ -87,7 +87,7 @@
 					<div class="col-md-7 col-lg-7">
 						<div style="color: #333; width: 400px;">
 							<div id="images" style="margin-bottom: 50px; margin-top: 10px;">
-								<img id="tenantBranding" width="200px" height="auto" style="max-height: 30px;"/>
+								<img id="tenantBranding" width="200px" height="auto" style="max-height: 35px;"/>
 							</div>
 							<div id="msg" class="success">
 								<h2><spring:message code="screen.logout.header" /></h2>

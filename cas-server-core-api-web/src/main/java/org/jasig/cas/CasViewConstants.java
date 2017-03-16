@@ -50,8 +50,5 @@ public interface CasViewConstants {
     /** The constant representing the PGT in the response. */
     String MODEL_ATTRIBUTE_NAME_PROXY_GRANTING_TICKET = CasProtocolConstants.VALIDATION_CAS_MODEL_PROXY_GRANTING_TICKET;
     
-    /** The constant representing the account temporary lock response message from ldap. */
-    String ACCOUNT_TEMPORARY_LOCKED_MESSAGE = "the account has been locked due to too many failed authentication attempts";
-    
     
 }

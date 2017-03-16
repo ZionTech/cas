@@ -3,7 +3,6 @@ package org.jasig.cas.authentication;
 import com.google.common.base.Functions;
 import com.google.common.collect.Maps;
 
-import org.jasig.cas.CasViewConstants;
 import org.jasig.cas.authentication.handler.support.AbstractUsernamePasswordAuthenticationHandler;
 import org.jasig.cas.authentication.principal.Principal;
 import org.jasig.cas.authentication.support.LdapPasswordPolicyConfiguration;
@@ -69,6 +68,9 @@ public class LdapAuthenticationHandler extends AbstractUsernamePasswordAuthentic
 
     /** Flag indicating whether multiple values are allowed fo principalIdAttribute. */
     private boolean allowMultiplePrincipalAttributeValues;
+    
+    /** The constant representing the account temporary lock response message from ldap. */
+    private String ACCOUNT_TEMPORARY_LOCKED_MESSAGE = "the account has been locked due to too many failed authentication attempts";
 
     /** Set of LDAP attributes fetch from an entry as part of the authentication process. */
     private String[] authenticatedEntryAttributes = ReturnAttributes.NONE.value();
@@ -188,7 +190,7 @@ public class LdapAuthenticationHandler extends AbstractUsernamePasswordAuthentic
             logger.warn("DN resolution failed. {}", response.getMessage());
             throw new AccountNotFoundException(upc.getUsername() + " not found.");
         }
-        if(response.getMessage() != null && response.getMessage().contains(CasViewConstants.ACCOUNT_TEMPORARY_LOCKED_MESSAGE)){
+        if(response.getMessage() != null && response.getMessage().contains(ACCOUNT_TEMPORARY_LOCKED_MESSAGE)){
         	throw new AccountLockedException();
         }
         throw new FailedLoginException("Invalid credentials");

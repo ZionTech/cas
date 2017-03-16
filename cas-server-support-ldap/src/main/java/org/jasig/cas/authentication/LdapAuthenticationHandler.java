@@ -2,6 +2,8 @@ package org.jasig.cas.authentication;
 
 import com.google.common.base.Functions;
 import com.google.common.collect.Maps;
+
+import org.jasig.cas.CasViewConstants;
 import org.jasig.cas.authentication.handler.support.AbstractUsernamePasswordAuthenticationHandler;
 import org.jasig.cas.authentication.principal.Principal;
 import org.jasig.cas.authentication.support.LdapPasswordPolicyConfiguration;
@@ -15,6 +17,7 @@ import org.ldaptive.auth.AuthenticationResultCode;
 import org.ldaptive.auth.Authenticator;
 
 import javax.annotation.PostConstruct;
+import javax.security.auth.login.AccountLockedException;
 import javax.security.auth.login.AccountNotFoundException;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
@@ -184,6 +187,9 @@ public class LdapAuthenticationHandler extends AbstractUsernamePasswordAuthentic
         if (AuthenticationResultCode.DN_RESOLUTION_FAILURE == response.getAuthenticationResultCode()) {
             logger.warn("DN resolution failed. {}", response.getMessage());
             throw new AccountNotFoundException(upc.getUsername() + " not found.");
+        }
+        if(response.getMessage() != null && response.getMessage().contains(CasViewConstants.ACCOUNT_TEMPORARY_LOCKED_MESSAGE)){
+        	throw new AccountLockedException();
         }
         throw new FailedLoginException("Invalid credentials");
     }

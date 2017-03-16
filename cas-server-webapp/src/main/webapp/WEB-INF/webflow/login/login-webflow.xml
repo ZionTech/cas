@@ -102,7 +102,7 @@
     <action-state id="handleAuthenticationFailure">
         <evaluate expression="authenticationExceptionHandler.handle(currentEvent.attributes.error, messageContext)"/>
         <transition on="AccountDisabledException" to="casAccountDisabledView"/>
-        <transition on="AccountLockedException" to="casAccountLockedView"/>
+        <transition on="AccountLockedException" to="generateLoginTicket"/>
         <transition on="AccountPasswordMustChangeException" to="casMustChangePassView"/>
         <transition on="CredentialExpiredException" to="casExpiredPassView"/>
         <transition on="InvalidLoginLocationException" to="casBadWorkstationView"/>

@@ -130,6 +130,7 @@ public abstract class AbstractWebApplicationService implements SingleLogoutServi
 
             logger.trace("Decoded urls and comparing [{}] with [{}]", thisUrl, serviceUrl);
             matched = thisUrl.equalsIgnoreCase(serviceUrl);
+            
             /**
              * Checking to see whether difference between serviceUrl and thisUrl is just differences in 
              * highestLevelDomain and port number. If thisUrl contains .local we ignore the port number and
@@ -149,7 +150,8 @@ public abstract class AbstractWebApplicationService implements SingleLogoutServi
                         logger.error("$$$"+thisUrl + ":"+ serviceUrl +":"+ serviceURLHost.substring(0,serviceURLHost.indexOf('.')));
                     }
         		}
-            }
+            }else if(!matched)
+            	matched = compareURLS(thisUrl, serviceUrl);
         } catch (final Exception e) {
             logger.error(e.getMessage(), e);
         }
@@ -193,5 +195,17 @@ public abstract class AbstractWebApplicationService implements SingleLogoutServi
     public Response getResponse(final String ticketId) {
         return this.responseBuilder.build(this, ticketId);
 
+    }
+    
+    /**
+     * compareURLS the urls. Removes http,https from url strings.
+     *
+     * @param thisUrl the thisUrl
+     * @param serviceUrl the serviceUrl
+     * @return compare and return boolean.
+     */
+    private boolean compareURLS(String thisUrl, String serviceUrl) {
+    	thisUrl = thisUrl.replace("http:", "https:");
+    	return thisUrl.equalsIgnoreCase(serviceUrl);
     }
 }

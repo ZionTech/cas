@@ -51,7 +51,7 @@ public class WebApplicationServiceFactory extends AbstractServiceFactory<WebAppl
         //Because the originaUrl will be used for "Location" value of http status 302
         //The value is for sending to a user browser, not for internal components
         final String originalUrl = serviceToUse;
-       /* try {
+        try {
             final URL url = new URL(serviceToUse);
             if(url.getProtocol().equalsIgnoreCase("https")) {
                 final StringBuilder builder = new StringBuilder();
@@ -68,7 +68,7 @@ public class WebApplicationServiceFactory extends AbstractServiceFactory<WebAppl
         } catch (final MalformedURLException e) {
             logger.error("Service URL String is not converted to URL: {}", e.toString());
         }
-*/
+
         final String id = AbstractServiceFactory.cleanupUrl(serviceToUse);
         final String artifactId = request.getParameter(CasProtocolConstants.PARAMETER_TICKET);
 

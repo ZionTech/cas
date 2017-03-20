@@ -71,6 +71,9 @@ public class LdapAuthenticationHandler extends AbstractUsernamePasswordAuthentic
     
     /** The constant representing the account temporary lock response message from ldap. */
     private String ACCOUNT_TEMPORARY_LOCKED_MESSAGE = "the account has been locked due to too many failed authentication attempts";
+    
+    /** The constant representing the account temporary disabled by the user. */
+    private String ACCOUNT_DISABLED = "the account has been administrative disabled";
 
     /** Set of LDAP attributes fetch from an entry as part of the authentication process. */
     private String[] authenticatedEntryAttributes = ReturnAttributes.NONE.value();
@@ -190,8 +193,14 @@ public class LdapAuthenticationHandler extends AbstractUsernamePasswordAuthentic
             logger.warn("DN resolution failed. {}", response.getMessage());
             throw new AccountNotFoundException(upc.getUsername() + " not found.");
         }
-        if(response.getMessage() != null && response.getMessage().contains(ACCOUNT_TEMPORARY_LOCKED_MESSAGE)){
+        final String responseMessage = response.getMessage();
+        if(responseMessage != null && responseMessage.contains(ACCOUNT_TEMPORARY_LOCKED_MESSAGE)){
+        	logger.warn("the account has been locked due to multiple invalid faliure login attempts");
         	throw new AccountLockedException();
+        }
+        if(responseMessage != null && responseMessage.contains(ACCOUNT_DISABLED)){
+        	logger.warn("the account has been disabled by the administrator");
+        	throw new AccountDisabledException();
         }
         throw new FailedLoginException("Invalid credentials");
     }

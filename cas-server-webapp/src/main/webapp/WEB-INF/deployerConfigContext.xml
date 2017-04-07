@@ -85,7 +85,7 @@
                                    | This facility can be used instead or in addition to PrincipalResolver
                                    | components.
                                    -->
-                                <entry key="member" value="memberOf" />
+                                <entry key="isMemberOf" value="isMemberOf" />
                                 <entry key="eduPersonAffiliation" value="affiliation" />
                                 <entry key="mail" value="mail" />
                                 <entry key="displayName" value="displayName" />

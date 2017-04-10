@@ -58,7 +58,7 @@ public class DeleteUserSessionController {
 	@Qualifier("centralAuthenticationService")
 	private CentralAuthenticationService centralAuthenticationService;
 
-	@RequestMapping(value = "/users", method = RequestMethod.POST)
+	@RequestMapping(value = "/invalidateUserSession", method = RequestMethod.POST)
 	public final ResponseEntity<String> deleteUserSession(@RequestParam("deletedUserId") final String userId,
 			@RequestParam("loggedInUserId") final String loggedInUserId) {
 		final Collection<Ticket> tickets = centralAuthenticationService.getTickets(Predicates.<Ticket>alwaysTrue());

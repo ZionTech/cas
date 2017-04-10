@@ -71,8 +71,7 @@ public class DeleteUserSessionController {
 				throw new NotAuthorizedException("Unauthorized: Check access failed for logged in user");
 			}
 		} catch (final NotAuthorizedException e) {
-			LOGGER.error("Exception occured While deleting user session and its attributes for deleted user {} .",
-					userId);
+			LOGGER.error("Exception occured While checking access for logged in user {} .", loggedInUserId);
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
 		} catch (final Exception e) {
 			LOGGER.error("Exception occured While deleting user session and its attributes for deleted user {} .",

@@ -22,6 +22,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Predicates;
 
+/**
+ * Process the /users URL requests.
+ * <p>
+ * Obtain the userId and loggedInUserId. Get all the ticket from central
+ * authentication server, check the access permission for logged in user from
+ * pricipal object. Validate the ticket from authentication pricncipal and
+ * delete all active TGT,PGT and child tickets from ticket registry.
+ *
+ * @author Venkatesh T
+ */
+
 @RestController("deleteUserSessionController")
 public class DeleteUserSessionController {
 

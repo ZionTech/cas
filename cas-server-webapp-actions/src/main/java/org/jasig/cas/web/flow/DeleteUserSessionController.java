@@ -3,7 +3,6 @@ package org.jasig.cas.web.flow;
 import java.util.Collection;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAuthorizedException;
 
 import org.jasig.cas.CentralAuthenticationService;
@@ -71,10 +70,15 @@ public class DeleteUserSessionController {
 						"Check access failed for logged in user. Logged in user should be a buyer or tenant admin");
 				throw new NotAuthorizedException("Unauthorized: Check access failed for logged in user");
 			}
+		} catch (final NotAuthorizedException e) {
+			LOGGER.error("Exception occured While deleting user session and its attributes for deleted user {} .",
+					userId);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
 		} catch (final Exception e) {
 			LOGGER.error("Exception occured While deleting user session and its attributes for deleted user {} .",
 					userId);
-			throw new InternalServerErrorException("InternalServerError: While deleting user tickets", e);
+			return new ResponseEntity<>("Exception occured While deleting user session ",
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

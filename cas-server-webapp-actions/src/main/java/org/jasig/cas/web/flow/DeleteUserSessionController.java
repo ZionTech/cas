@@ -2,6 +2,7 @@ package org.jasig.cas.web.flow;
 
 import java.util.Collection;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.NotAuthorizedException;
 
@@ -60,11 +61,11 @@ public class DeleteUserSessionController {
 
 	@RequestMapping(value = "/invalidateUserSession", method = RequestMethod.POST)
 	public final ResponseEntity<String> deleteUserSession(@RequestParam("deletedUserId") final String userId,
-			@RequestParam("loggedInUserId") final String loggedInUserId) {
+			@RequestParam("loggedInUserId") final String loggedInUserId, final HttpServletRequest request) {
 		final Collection<Ticket> tickets = centralAuthenticationService.getTickets(Predicates.<Ticket>alwaysTrue());
 		LOGGER.debug("Tickets count {}", (tickets == null) ? 0 : tickets.size());
 		try {
-			if (checkAcess(tickets, loggedInUserId)) {
+			if (checkAcess(tickets, loggedInUserId, request)) {
 				for (final Ticket ticket : tickets) {
 					if (ticket instanceof TicketGrantingTicket && !ticket.isExpired()) {
 						final TicketGrantingTicket tgticket = (TicketGrantingTicket) ticket;
@@ -93,6 +94,25 @@ public class DeleteUserSessionController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	
+	/**
+	 * return the tenantId.
+	 * 
+	 * @param req The {@link HttpServletRequest} .
+	 * @return The tenantId.
+	 */
+	private String getTenantName(final HttpServletRequest req ){
+		String tenantId = AuthUtils.SELF;
+
+        if(req!=null) {
+          //The URL is //https://localhost:8443/cas/login.
+          tenantId = AuthUtils.extractTenantID(req);
+        }
+        return tenantId;
+	}
+	
+	
+	
 	/**
 	 * Check access for the logged in user can access for delete session or not
 	 *
@@ -100,7 +120,7 @@ public class DeleteUserSessionController {
 	 * @param loggedInUserId
 	 * @return access check boolean
 	 */
-	private boolean checkAcess(final Collection<Ticket> tickets, final String loggedInUserId)
+	private boolean checkAcess(final Collection<Ticket> tickets, final String loggedInUserId, final HttpServletRequest request)
 			throws NotAuthorizedException {
 		LOGGER.debug("Check access for logged in for destroy the session");
 		for (final Ticket ticket : tickets) {
@@ -115,7 +135,7 @@ public class DeleteUserSessionController {
 						if (principal.getAttributes().containsKey(isMemberOf)
 								&& principal.getAttributes().containsKey(cn)) {
 							final String member = (String) principal.getAttributes().get(isMemberOf);
-							final String tenant = (String) principal.getAttributes().get(cn);
+							final String tenant = getTenantName(request);
 							if (member.contains(String.format(BUYER_DN_FORMAT, tenant))
 									|| member.contains(String.format(TENANT_ADMIN_DN_FORMAT, tenant))) {
 								LOGGER.debug(

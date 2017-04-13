@@ -51,8 +51,6 @@ public class DeleteUserSessionController {
 
 	private final String isMemberOf = "isMemberOf";
 
-	private final String cn = "cn";
-
 	/** Core we delegate to for handling all ticket related tasks. */
 	@NotNull
 	@Autowired
@@ -94,25 +92,23 @@ public class DeleteUserSessionController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	
 	/**
 	 * return the tenantId.
-	 * 
-	 * @param req The {@link HttpServletRequest} .
+	 *
+	 * @param req
+	 *            The {@link HttpServletRequest} .
 	 * @return The tenantId.
 	 */
-	private String getTenantName(final HttpServletRequest req ){
+	private String getTenantName(final HttpServletRequest req) {
 		String tenantId = AuthUtils.SELF;
 
-        if(req!=null) {
-          //The URL is //https://localhost:8443/cas/login.
-          tenantId = AuthUtils.extractTenantID(req);
-        }
-        return tenantId;
+		if (req != null) {
+			// The URL is //https://localhost:8443/cas/login.
+			tenantId = AuthUtils.extractTenantID(req);
+		}
+		return tenantId;
 	}
-	
-	
-	
+
 	/**
 	 * Check access for the logged in user can access for delete session or not
 	 *
@@ -120,8 +116,8 @@ public class DeleteUserSessionController {
 	 * @param loggedInUserId
 	 * @return access check boolean
 	 */
-	private boolean checkAcess(final Collection<Ticket> tickets, final String loggedInUserId, final HttpServletRequest request)
-			throws NotAuthorizedException {
+	private boolean checkAcess(final Collection<Ticket> tickets, final String loggedInUserId,
+			final HttpServletRequest request) throws NotAuthorizedException {
 		LOGGER.debug("Check access for logged in for destroy the session");
 		for (final Ticket ticket : tickets) {
 			if (ticket instanceof TicketGrantingTicket && !ticket.isExpired()) {
@@ -132,9 +128,10 @@ public class DeleteUserSessionController {
 				if (tgticket.getId().startsWith("TGT")) {
 					final Principal principal = getPricipal(tgticket);
 					if (principal.getId().equalsIgnoreCase(loggedInUserId)) {
-						if (principal.getAttributes().containsKey(isMemberOf)
-								&& principal.getAttributes().containsKey(cn)) {
-							final String member = (String) principal.getAttributes().get(isMemberOf);
+						if (principal.getAttributes().containsKey(isMemberOf)) {
+							@SuppressWarnings("unchecked")
+							final Collection<String> member = (Collection<String>) principal.getAttributes()
+									.get(isMemberOf);
 							final String tenant = getTenantName(request);
 							if (member.contains(String.format(BUYER_DN_FORMAT, tenant))
 									|| member.contains(String.format(TENANT_ADMIN_DN_FORMAT, tenant))) {

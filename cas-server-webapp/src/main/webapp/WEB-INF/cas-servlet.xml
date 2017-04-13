@@ -42,6 +42,15 @@
             p:order="2001"/>
     -->
 
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.ResourceBundleViewResolver" p:order="0">
+  		<property name="basenames">
+    		<list>
+      			<value>${cas.viewResolver.basename}</value>
+      			<value>protocol_views</value>
+      			<value>saml_views</value>
+    		</list>
+  		</property>
+	</bean>
     <!-- Locale Resolver -->
     <bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver"
           p:defaultLocale="${locale.default:en}"/>
@@ -146,6 +155,14 @@
       p:servicesManager-ref="servicesManager"
       p:ticketRegistry-ref="ticketRegistry"
       p:timeout="7200" />
-
+      
+    <bean id="samlValidateController" class="org.jasig.cas.web.ServiceValidateController"
+      p:validationSpecificationClass="org.jasig.cas.validation.Cas20WithoutProxyingValidationSpecification"
+      p:centralAuthenticationService-ref="centralAuthenticationService"
+      p:proxyHandler-ref="proxy20Handler"
+      p:argumentExtractor-ref="samlArgumentExtractor"
+      p:successView="casSamlServiceSuccessView"
+      p:failureView="casSamlServiceFailureView"
+       />
 
 </beans>

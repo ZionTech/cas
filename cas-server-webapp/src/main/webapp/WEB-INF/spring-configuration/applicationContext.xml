@@ -39,14 +39,15 @@
     </util:list>
 
     <util:list id="argumentExtractors">
-        <ref bean="defaultArgumentExtractor"/>
-    </util:list>
+        <ref bean="casArgumentExtractor"/>
+        <ref bean="samlArgumentExtractor"/>
+    </util:list>    
 
     <util:map id="uniqueIdGeneratorsMap">
-        <entry
-            key="org.jasig.cas.authentication.principal.SimpleWebApplicationServiceImpl"
-            value-ref="serviceTicketUniqueIdGenerator" />
-    </util:map>
+  		<entry key="org.jasig.cas.authentication.principal.SimpleWebApplicationServiceImpl" value-ref="serviceTicketUniqueIdGenerator" />
+  		<entry key="org.jasig.cas.support.openid.authentication.principal.OpenIdService" value-ref="serviceTicketUniqueIdGenerator" />
+  		<entry key="org.jasig.cas.support.saml.authentication.principal.SamlService" value-ref="samlServiceTicketUniqueIdGenerator" />
+	</util:map>
 
     <bean id="passThroughController" class="org.springframework.web.servlet.mvc.UrlFilenameViewController"/>
 
@@ -56,6 +57,7 @@
         <property name="mappings">
             <util:properties>
                 <prop key="/authorizationFailure.html">passThroughController</prop>
+			    <prop key="/samlValidate">samlValidateController</prop>
             </util:properties>
         </property>
         <!--

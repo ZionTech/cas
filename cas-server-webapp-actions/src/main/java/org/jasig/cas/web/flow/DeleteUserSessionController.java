@@ -129,12 +129,9 @@ public class DeleteUserSessionController {
 					final Principal principal = getPricipal(tgticket);
 					if (principal.getId().equalsIgnoreCase(loggedInUserId)) {
 						if (principal.getAttributes().containsKey(isMemberOf)) {
-							@SuppressWarnings("unchecked")
-							final Collection<String> member = (Collection<String>) principal.getAttributes()
-									.get(isMemberOf);
 							final String tenant = getTenantName(request);
-							if (member.contains(String.format(BUYER_DN_FORMAT, tenant))
-									|| member.contains(String.format(TENANT_ADMIN_DN_FORMAT, tenant))) {
+							final Object memeberObj = principal.getAttributes().get(isMemberOf);
+							if (isMemeberOfBuyerOrTenantAdmin(memeberObj, tenant)) {
 								LOGGER.debug(
 										"Logged in user has the access for the delete the user session loggedin user {}",
 										loggedInUserId);
@@ -152,6 +149,34 @@ public class DeleteUserSessionController {
 						}
 					}
 				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Checking the isMeber with buyer or admintenant if not returns false.
+	 *
+	 * @param memeberObj
+	 *            The memeberObj.
+	 * @param tenant
+	 *            The tenant. return the isMeberOf.
+	 */
+	private boolean isMemeberOfBuyerOrTenantAdmin(final Object memeberObj, final String tenant) {
+		if (memeberObj instanceof Collection<?>) {
+			@SuppressWarnings("unchecked")
+			final Collection<String> member = (Collection<String>) memeberObj;
+			if (member.contains(String.format(BUYER_DN_FORMAT, tenant))
+					|| member.contains(String.format(TENANT_ADMIN_DN_FORMAT, tenant))) {
+				LOGGER.debug("Logged in user has the access for the delete the user session loggedin user {}");
+				return true;
+			}
+		} else if (memeberObj instanceof String) {
+			final String member = (String) memeberObj;
+			if (member.contains(String.format(BUYER_DN_FORMAT, tenant))
+					|| member.contains(String.format(TENANT_ADMIN_DN_FORMAT, tenant))) {
+				LOGGER.debug("Logged in user has the access for the delete the user session loggedin user {}");
+				return true;
 			}
 		}
 		return false;

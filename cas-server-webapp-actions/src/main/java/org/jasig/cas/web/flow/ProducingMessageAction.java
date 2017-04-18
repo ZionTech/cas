@@ -9,6 +9,8 @@ import javax.validation.constraints.NotNull;
 import org.jasig.cas.authentication.Credential;
 import org.jasig.cas.services.ServicesManager;
 import org.jasig.cas.web.support.WebUtils;
+import org.jasig.cas.web.wavity.event.EventPublisher;
+import org.jasig.cas.web.wavity.event.EventResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -16,10 +18,7 @@ import org.springframework.webflow.action.AbstractAction;
 import org.springframework.webflow.execution.Event;
 import org.springframework.webflow.execution.RequestContext;
 
-import com.wavity.broker.api.provider.BrokerProvider;
-import com.wavity.broker.util.EventAttribute;
 import com.wavity.broker.util.EventType;
-import com.wavity.broker.util.TopicType;
 
 /**
  * Performs the message producing for CAS login events.
@@ -59,18 +58,13 @@ public class ProducingMessageAction extends AbstractAction {
 			return error();
 		}
 
+		final String message = String.format("The user %s logged in successfully", credential.toString());
 		try {
-			final BrokerProvider brokerProvider = BrokerProvider.getInstance();
-			final EnumMap<EventAttribute, Object> attr = new EnumMap<EventAttribute, Object>(EventAttribute.class);
-			attr.put(EventAttribute.MESSAGE, String.format("The user %s logged in successfully", credential.toString()));
-			attr.put(EventAttribute.ACTOR_ID, tenantId);
-			attr.put(EventAttribute.TIMESTAMP, Long.toString(Calendar.getInstance().getTimeInMillis()));
-			attr.put(EventAttribute.IS_NOTIFY_TARGET, true);
-			attr.put(EventAttribute.EVENT_RESULT, "success");
-			attr.put(EventAttribute.EC_ID, "Test EC ID");
-			brokerProvider.publish(TopicType.ADMIN, EventType.EVENT_TYPE_SSO_AUTHENTICATION, attr);
+			EventPublisher.publishEvent(context.getMessageContext(),
+					EventType.EVENT_TYPE_SSO_AUTHENTICATION, tenantId, EventResult.SUCCESS, message);
+			logger.info("Successfully published login event for a user " + credential.toString());
 		} catch (final Exception e) {
-			logger.error("broker failed to publish event", e);
+			logger.warn("Could not publish login event for a user "+ credential.toString(), e);
 		}
 
 		return success();

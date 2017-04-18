@@ -7,6 +7,8 @@ import org.jasig.cas.authentication.DefaultAuthenticationSystemSupport;
 import org.jasig.cas.authentication.principal.Service;
 import org.jasig.cas.services.RegisteredService;
 import org.jasig.cas.services.ServicesManager;
+import org.jasig.cas.ticket.InvalidTicketException;
+import org.jasig.cas.ticket.TicketGrantingTicket;
 import org.jasig.cas.web.support.CookieRetrievingCookieGenerator;
 import org.jasig.cas.web.support.WebUtils;
 import org.slf4j.Logger;
@@ -89,7 +91,14 @@ public final class SendTicketGrantingTicketAction extends AbstractAction {
         if (ticketGrantingTicketValueFromCookie != null && !ticketGrantingTicketId.equals(ticketGrantingTicketValueFromCookie)) {
             this.centralAuthenticationService.destroyTicketGrantingTicket(ticketGrantingTicketValueFromCookie);
         }
-
+        
+        try {
+        	final TicketGrantingTicket ticket = this.centralAuthenticationService.getTicket(ticketGrantingTicketId, TicketGrantingTicket.class);
+        	WebUtils.addPrincipalInMessageContext(context, ticket);
+        } catch (InvalidTicketException e) {
+        	LOGGER.error("Error to get a tgt : " + e.toString());
+        }
+        
         return success();
     }
 

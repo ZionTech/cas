@@ -15,6 +15,7 @@ import org.jasig.cas.authentication.HandlerResult;
 import org.jasig.cas.authentication.MessageDescriptor;
 import org.jasig.cas.authentication.principal.Service;
 import org.jasig.cas.ticket.AbstractTicketException;
+import org.jasig.cas.ticket.InvalidTicketException;
 import org.jasig.cas.ticket.ServiceTicket;
 import org.jasig.cas.ticket.TicketCreationException;
 import org.jasig.cas.ticket.TicketGrantingTicket;
@@ -104,6 +105,7 @@ public class AuthenticationViaFormAction {
         if(req!=null) {
           //The URL is //https://localhost:8443/cas/login.
           tenantId = AuthUtils.extractTenantID(req);
+          WebUtils.putValuesOfBrokerEvent(context.getMessageContext(), req);
         }
 
         AuthUtils.setTenantId(tenantId);

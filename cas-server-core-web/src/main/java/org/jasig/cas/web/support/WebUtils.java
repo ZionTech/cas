@@ -2,10 +2,12 @@ package org.jasig.cas.web.support;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jasig.cas.authentication.Credential;
+import org.jasig.cas.authentication.principal.Principal;
 import org.jasig.cas.authentication.principal.Service;
 import org.jasig.cas.authentication.principal.WebApplicationService;
 import org.jasig.cas.logout.LogoutRequest;
 import org.jasig.cas.services.RegisteredService;
+import org.jasig.cas.ticket.InvalidTicketException;
 import org.jasig.cas.ticket.ServiceTicket;
 import org.jasig.cas.ticket.TicketGrantingTicket;
 import org.pac4j.core.context.J2EContext;
@@ -13,6 +15,8 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.core.profile.UserProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.binding.message.MessageBuilder;
+import org.springframework.binding.message.MessageContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
@@ -22,6 +26,8 @@ import org.springframework.webflow.context.servlet.ServletExternalContext;
 import org.springframework.webflow.core.collection.MutableAttributeMap;
 import org.springframework.webflow.execution.RequestContext;
 
+import com.wavity.broker.util.EventAttribute;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.http.HttpServletRequest;
@@ -29,6 +35,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
+import java.util.Map.Entry;
 
 /**
  * Common utilities for the web tier.
@@ -436,5 +444,62 @@ public final class WebUtils {
         } else {
             LOGGER.debug("No warning cookie generator is defined");
         }
+    }
+      
+    /**
+     * Put values to produce a broker event in a message context.
+     *
+     * @param messageContext the message context
+     * @param httpReq the http request
+     */
+    public static void putValuesOfBrokerEvent(
+            final MessageContext messageContext, final HttpServletRequest httpReq) {
+    	addValueInMessageContext(messageContext, "clientId", httpReq.getRemoteUser());
+    	addValueInMessageContext(messageContext, "clientIp", httpReq.getRemoteHost());
+    	addValueInMessageContext(messageContext, "ecId", UUID.randomUUID().toString());
+    	addValueInMessageContext(messageContext, "eventId", UUID.randomUUID().toString());
+    	addValueInMessageContext(messageContext, "hostIp", httpReq.getLocalAddr());
+    	addValueInMessageContext(messageContext, "hostName", httpReq.getLocalName());
+    }
+    
+    /**
+     * Add message in message context.
+     *
+     * @param messageContext the message context
+     * @param source the source
+     * @param value the value
+     */
+    public static void addValueInMessageContext(
+            final MessageContext messageContext,
+            final String source, final String value) {
+    	if(value != null) {
+    		final MessageBuilder messageBuilder = new MessageBuilder();
+    		messageBuilder.source(source);
+    		messageContext.addMessage(messageBuilder.info().code(value).build());
+    	}
+    }
+    
+    /**
+     * Add user principal's entryUUID and mail in message context.
+     *
+     * @param messageContext the message context
+     * @param source the source
+     * @param value the value
+     */
+    public static void addPrincipalInMessageContext( final RequestContext context,
+            final TicketGrantingTicket ticket) {
+    	final Principal userPrincipal = ticket.getAuthentication().getPrincipal();
+    	if(userPrincipal != null) {
+    		for (final Entry<String, Object> e : userPrincipal.getAttributes().entrySet()) {
+    			switch (e.getKey()) {
+    			case "entryUUID":
+    				WebUtils.addValueInMessageContext(context.getMessageContext(), "actorId", e.getValue().toString());
+    				break;
+    			case "mail":
+    				WebUtils.addValueInMessageContext(context.getMessageContext(), "actorName", e.getValue().toString());
+    				break;
+    			}
+    		}
+    	}
     }
 }

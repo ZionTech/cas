@@ -1,5 +1,7 @@
 package org.jasig.cas.web.flow;
 
+import static com.wavity.broker.util.EventAttribute.CLIENT_ID;
+
 import java.util.Calendar;
 import java.util.EnumMap;
 import java.util.List;
@@ -15,7 +17,10 @@ import org.jasig.cas.logout.LogoutRequest;
 import org.jasig.cas.logout.LogoutRequestStatus;
 import org.jasig.cas.services.RegisteredService;
 import org.jasig.cas.services.ServicesManager;
+import org.jasig.cas.ticket.TicketGrantingTicket;
 import org.jasig.cas.web.support.WebUtils;
+import org.jasig.cas.web.wavity.event.EventPublisher;
+import org.jasig.cas.web.wavity.event.EventResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -72,7 +77,10 @@ public final class LogoutAction extends AbstractLogoutAction {
         }
         
         // Produce a message using broker API
-        produceLogoutMessage(context);
+        final String tgtIsNull = EventPublisher.getValueFromMessageList(context.getMessageContext().getMessagesBySource("tgtIsNull"));
+        if(tgtIsNull != null && tgtIsNull.equals(Boolean.toString(false))) {
+        	produceLogoutMessage(context);
+        }
         
         final String service = request.getParameter(CasProtocolConstants.PARAMETER_SERVICE);
         if (this.followServiceRedirects && service != null) {
@@ -115,23 +123,26 @@ public final class LogoutAction extends AbstractLogoutAction {
     	String tenantId = null;
     	if (request != null) {
 			tenantId = AuthUtils.extractTenantID(request);
+			WebUtils.putValuesOfBrokerEvent(context.getMessageContext(), request);
 		}
 		if (tenantId == null || "".equals(tenantId)) {
 			logger.error("*** Tenant ID can't be empty or null ***");
 			return;
 		}
+		
+		final String user = EventPublisher.getValueFromMessageList(context.getMessageContext().getMessagesBySource("actorName"));
+		if(user == null || "".equals(user)) {
+			logger.error("*** Username can't be empty or null ***");
+			return;
+		}
+		
+		final String message = String.format("The user %s logged out", user);
 		try {
-			final BrokerProvider brokerProvider = BrokerProvider.getInstance();
-			final EnumMap<EventAttribute, Object> attr = new EnumMap<EventAttribute, Object>(EventAttribute.class);
-			attr.put(EventAttribute.MESSAGE, String.format("The user %s logged out", AuthUtils.getCredential()));
-			attr.put(EventAttribute.ACTOR_ID, tenantId);
-			attr.put(EventAttribute.TIMESTAMP, Long.toString(Calendar.getInstance().getTimeInMillis()));
-			attr.put(EventAttribute.IS_NOTIFY_TARGET, true);
-			attr.put(EventAttribute.EVENT_RESULT, "success");
-			attr.put(EventAttribute.EC_ID, "Test EC ID");
-			brokerProvider.publish(TopicType.ADMIN, EventType.EVENT_TYPE_SSO_AUTHENTICATION, attr);
-		} catch (Exception e) {
-			logger.error("broker failed to publish event", e);
+			EventPublisher.publishEvent(context.getMessageContext(),
+					EventType.EVENT_TYPE_SSO_AUTHENTICATION, tenantId, EventResult.SUCCESS, message);
+			logger.info("Successfully published logout event for a user " + user);
+		} catch (final Exception e) {
+			logger.warn("Could not publish logout event for a user "+ user, e);
 		}
     }
 }

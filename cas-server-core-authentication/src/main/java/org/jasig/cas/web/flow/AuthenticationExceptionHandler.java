@@ -1,22 +1,20 @@
 package org.jasig.cas.web.flow;
 
 import org.jasig.cas.authentication.AuthenticationException;
+import org.jasig.cas.web.wavity.event.EventPublisher;
+import org.jasig.cas.web.wavity.event.EventResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.binding.message.MessageBuilder;
 import org.springframework.binding.message.MessageContext;
 import org.springframework.stereotype.Component;
+import org.springframework.webflow.execution.RequestContext;
 
-import com.wavity.broker.api.provider.BrokerProvider;
-import com.wavity.broker.util.EventAttribute;
 import com.wavity.broker.util.EventType;
-import com.wavity.broker.util.TopicType;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.List;
 
 /**
@@ -92,6 +90,7 @@ public class AuthenticationExceptionHandler {
     /**
      * Maps an authentication exception onto a state name equal to the simple class name of the.
      *
+     * @param context the request context.
      * @param e Authentication error to handle.
      * @param messageContext the spring message context
      * @return Name of next flow state to transition to or {@value #UNKNOWN}
@@ -101,7 +100,7 @@ public class AuthenticationExceptionHandler {
      * configured. If not match is found, {@value #UNKNOWN} is returned.
      */
     public String handle(final AuthenticationException e, final MessageContext messageContext) {
-        if (e != null) {
+    	if (e != null) {
             final MessageBuilder builder = new MessageBuilder();
             for (final Class<? extends Exception> kind : this.errors) {
                 for (final Class<? extends Exception> handlerError : e.getHandlerErrors().values()) {
@@ -109,7 +108,7 @@ public class AuthenticationExceptionHandler {
                         final String handlerErrorName = handlerError.getSimpleName();
                         final String messageCode = this.messageBundlePrefix + handlerErrorName;
                         messageContext.addMessage(builder.error().code(messageCode).build());
-                        produceBrokerMessage(handlerErrorName, messageCode);
+                        produceBrokerMessage(messageContext, handlerErrorName, messageCode);
                         return handlerErrorName;
                     }
                 }
@@ -118,7 +117,7 @@ public class AuthenticationExceptionHandler {
         }
         final String messageCode = this.messageBundlePrefix + UNKNOWN;
         logger.trace("Unable to translate handler errors of the authentication exception {}. Returning {} by default...", e, messageCode);
-        produceBrokerMessage(messageCode);
+        produceBrokerMessage(messageContext, messageCode);
         messageContext.addMessage(new MessageBuilder().error().code(messageCode).build());
         return UNKNOWN;
     }
@@ -129,12 +128,12 @@ public class AuthenticationExceptionHandler {
      * @param handlerErrorName the string of the handler error name
      * @param messageCode the string of the message code
      */
-    private final void produceBrokerMessage(final String handlerErrorName, final String messageCode) {
+    private final void produceBrokerMessage(final MessageContext messageContext, final String handlerErrorName, final String messageCode) {
     	if (("".equals(handlerErrorName) || handlerErrorName == null) || ("".equals(messageCode) || messageCode == null)) {
     		logger.error("*** handlerErrorName and messageCode required to publish a message ***");
     		return;
     	}
-    	publishMessage(String.format("handler error: %s, message code: %s", handlerErrorName, messageCode));
+    	publishMessage(messageContext, String.format("handler error: %s, message code: %s", handlerErrorName, messageCode));
     }
     
     /**
@@ -142,12 +141,12 @@ public class AuthenticationExceptionHandler {
      * 
      * @param messageCode the string of message code
      */
-    private final void produceBrokerMessage(final String messageCode) {
+    private final void produceBrokerMessage(final MessageContext messageContext, final String messageCode) {
     	if ("".equals(messageCode) || messageCode == null) {
     		logger.error("*** message code is required to publish a message ***");
     		return;
     	}
-    	publishMessage(messageCode);
+    	publishMessage(messageContext, messageCode);
     }
     
     /**
@@ -155,23 +154,31 @@ public class AuthenticationExceptionHandler {
      * 
      * @param message the string of message
      */
-    private final void publishMessage(final String message) {
+    private final void publishMessage(final MessageContext messageContext, final String message) {
     	if ("".equals(message) || message == null) {
-    		logger.error("*** the message is required to pubish an error message ***");
+    		logger.error("*** Error : the message is required to pubish an error message ***");
     		return;
     	}
+		
+    	final String tenantId = AuthUtils.getTenantId();
+    	if("".equals(tenantId) || tenantId == null) {
+    		logger.error("*** Error : the tenantId is required to pubish an error message ***");
+    		return;
+    	}
+    	
+    	final String user = AuthUtils.getCredential();
+    	if("".equals(user) || user == null) {
+    		logger.error("*** Error : the user is required to pubish an error message ***");
+    		return;
+    	}
+    	
+    	final String messageforBroker = String.format("Credential: %s, message: %s", user, message);
     	try {
-    		final BrokerProvider brokerProvider = BrokerProvider.getInstance();
-			final EnumMap<EventAttribute, Object> attr = new EnumMap<EventAttribute, Object>(EventAttribute.class);
-			attr.put(EventAttribute.MESSAGE, String.format("Credential: %s, message: %s", AuthUtils.getCredential(), message));
-			attr.put(EventAttribute.TIMESTAMP, Long.toString(Calendar.getInstance().getTimeInMillis()));
-			attr.put(EventAttribute.IS_NOTIFY_TARGET, true);
-			attr.put(EventAttribute.ACTOR_ID, AuthUtils.getTenantId());
-			attr.put(EventAttribute.EVENT_RESULT, "success");
-			attr.put(EventAttribute.EC_ID, "Test EC ID");
-			brokerProvider.publish(TopicType.ADMIN, EventType.EVENT_TYPE_SSO_AUTHENTICATION, attr);
-		} catch (final Exception e) {
-			logger.error("broker failed to publish event", e);
-		}
+    		EventPublisher.publishEvent(messageContext,
+    				EventType.EVENT_TYPE_SSO_AUTHENTICATION, tenantId, EventResult.SUCCESS, messageforBroker);
+    		logger.info("Successfully published login event for a user " + user);
+    	} catch (final Exception e) {
+    		logger.warn("Could not publish login event for a user "+ user, e);
+    	}
     }
 }

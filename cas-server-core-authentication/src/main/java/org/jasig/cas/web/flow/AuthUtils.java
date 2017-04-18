@@ -43,6 +43,10 @@ public final class AuthUtils {
     if (request instanceof HttpServletRequest) {
       HttpServletRequest httpRequest = (HttpServletRequest) request;
       String uri = httpRequest.getParameter("service");
+      String requestUri = httpRequest.getRequestURI();
+      if(uri==null && requestUri!=null && requestUri.equals("/auth/logout")) {
+    	  uri = httpRequest.getHeader("referer");
+      }
       if(uri==null) {
         uri = httpRequest.getRequestURL().toString();
       }

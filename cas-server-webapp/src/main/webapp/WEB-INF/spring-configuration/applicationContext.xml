@@ -39,9 +39,8 @@
     </util:list>
 
     <util:list id="argumentExtractors">
-        <ref bean="casArgumentExtractor"/>
-        <ref bean="samlArgumentExtractor"/>
-    </util:list>    
+        <ref bean="defaultArgumentExtractor"/>
+    </util:list>
 
     <util:map id="uniqueIdGeneratorsMap">
   		<entry key="org.jasig.cas.authentication.principal.SimpleWebApplicationServiceImpl" value-ref="serviceTicketUniqueIdGenerator" />

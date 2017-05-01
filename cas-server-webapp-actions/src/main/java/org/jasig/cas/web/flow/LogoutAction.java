@@ -122,11 +122,11 @@ public final class LogoutAction extends AbstractLogoutAction {
 		}
 		try {
 			final BrokerProvider brokerProvider = BrokerProvider.getInstance();
-			final EnumMap<EventAttribute, Object> attr = new EnumMap<EventAttribute, Object>(EventAttribute.class);
+			final EnumMap<EventAttribute, String> attr = new EnumMap<EventAttribute, String>(EventAttribute.class);
 			attr.put(EventAttribute.MESSAGE, String.format("The user %s logged out", AuthUtils.getCredential()));
 			attr.put(EventAttribute.ACTOR_ID, tenantId);
 			attr.put(EventAttribute.TIMESTAMP, Long.toString(Calendar.getInstance().getTimeInMillis()));
-			attr.put(EventAttribute.IS_NOTIFY_TARGET, true);
+			attr.put(EventAttribute.IS_NOTIFY_TARGET, Boolean.toString(true));
 			attr.put(EventAttribute.EVENT_RESULT, "success");
 			attr.put(EventAttribute.EC_ID, "Test EC ID");
 			brokerProvider.publish(TopicType.ADMIN, EventType.EVENT_TYPE_SSO_AUTHENTICATION, attr);

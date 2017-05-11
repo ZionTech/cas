@@ -1,9 +1,14 @@
 package org.jasig.cas;
 
-import com.codahale.metrics.annotation.Counted;
-import com.codahale.metrics.annotation.Metered;
-import com.codahale.metrics.annotation.Timed;
-import com.google.common.base.Predicate;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.validation.constraints.NotNull;
+
 import org.jasig.cas.authentication.AcceptAnyAuthenticationPolicyFactory;
 import org.jasig.cas.authentication.Authentication;
 import org.jasig.cas.authentication.ContextualAuthenticationPolicy;
@@ -12,11 +17,13 @@ import org.jasig.cas.authentication.principal.DefaultPrincipalFactory;
 import org.jasig.cas.authentication.principal.PrincipalFactory;
 import org.jasig.cas.authentication.principal.Service;
 import org.jasig.cas.logout.LogoutManager;
+import org.jasig.cas.logout.LogoutRequest;
 import org.jasig.cas.services.RegisteredService;
 import org.jasig.cas.services.ServiceContext;
 import org.jasig.cas.services.ServicesManager;
 import org.jasig.cas.services.UnauthorizedProxyingException;
 import org.jasig.cas.services.UnauthorizedServiceException;
+import org.jasig.cas.support.events.CasTicketGrantingTicketDestroyedEvent;
 import org.jasig.cas.ticket.AbstractTicketException;
 import org.jasig.cas.ticket.InvalidTicketException;
 import org.jasig.cas.ticket.Ticket;
@@ -33,12 +40,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.util.Assert;
 
-import javax.annotation.Resource;
-import javax.validation.constraints.NotNull;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
+import com.codahale.metrics.annotation.Counted;
+import com.codahale.metrics.annotation.Metered;
+import com.codahale.metrics.annotation.Timed;
+import com.google.common.base.Predicate;
 
 /**
  * An abstract implementation of the {@link CentralAuthenticationService} that provides access to
@@ -148,8 +153,36 @@ public abstract class AbstractCentralAuthenticationService implements CentralAut
         this.eventPublisher.publishEvent(e);
     }
 
+    /**
+     * placeholder for TGT.
+     */
+    protected TicketGrantingTicket ticketToDestroy;
 
     /**
+     * save a copy of TGT to destroy session when TGT session is timedout.
+     * 
+     * @param ticketToDestroy The {@link TicketGrantingTicket}.
+     */
+    public void setTicketToDestroy(TicketGrantingTicket ticketToDestroy) {
+		this.ticketToDestroy = ticketToDestroy;
+	}
+
+    
+    /**
+     * Handle TGT destroy.
+     * 
+     * @param ticket The {@link TicketGrantingTicket}.
+     * @return The {@link List} of logout requests.
+     */
+    protected List<LogoutRequest>  handlerDestroy( final TicketGrantingTicket ticket )
+    {
+   	    final List<LogoutRequest> logoutRequests =  logoutManager.performLogout(ticket);
+        doPublishEvent(new CasTicketGrantingTicketDestroyedEvent(this, ticket));
+        return logoutRequests;
+    }
+    
+    
+	/**
      * {@inheritDoc}
      *
      * Note:
@@ -165,7 +198,7 @@ public abstract class AbstractCentralAuthenticationService implements CentralAut
             throws InvalidTicketException {
         Assert.notNull(ticketId, "ticketId cannot be null");
         final Ticket ticket = this.ticketRegistry.getTicket(ticketId, clazz);
-
+       
         if (ticket == null) {
             logger.debug("Ticket [{}] by type [{}] cannot be found in the ticket registry.", ticketId, clazz.getSimpleName());
             throw new InvalidTicketException(ticketId);
@@ -174,6 +207,10 @@ public abstract class AbstractCentralAuthenticationService implements CentralAut
         if (ticket instanceof TicketGrantingTicket) {
             synchronized (ticket) {
                 if (ticket.isExpired()) {
+                	if(((TicketGrantingTicket) ticket).isRoot())
+                	{
+                	 setTicketToDestroy((TicketGrantingTicket) ticket);
+                	}
                     this.ticketRegistry.deleteTicket(ticketId);
                     logger.debug("Ticket [{}] has expired and is now deleted from the ticket registry.", ticketId);
                     throw new InvalidTicketException(ticketId);

@@ -30,6 +30,7 @@ import org.jasig.cas.ticket.AbstractTicketException;
 import org.jasig.cas.ticket.InvalidTicketException;
 import org.jasig.cas.ticket.ServiceTicket;
 import org.jasig.cas.ticket.ServiceTicketFactory;
+import org.jasig.cas.ticket.Ticket;
 import org.jasig.cas.ticket.TicketFactory;
 import org.jasig.cas.ticket.TicketGrantingTicket;
 import org.jasig.cas.ticket.TicketGrantingTicketFactory;
@@ -109,20 +110,31 @@ public final class CentralAuthenticationServiceImpl extends AbstractCentralAuthe
     @Counted(name="DESTROY_TICKET_GRANTING_TICKET_COUNTER", monotonic=true)
     @Override
     public List<LogoutRequest> destroyTicketGrantingTicket(@NotNull final String ticketGrantingTicketId) {
+    	List<LogoutRequest> logoutRequests  = Collections.emptyList();
         try {
             logger.debug("Removing ticket [{}] from registry...", ticketGrantingTicketId);
             final TicketGrantingTicket ticket = getTicket(ticketGrantingTicketId, TicketGrantingTicket.class);
             logger.debug("Ticket found. Processing logout requests and then deleting the ticket...");
-            final List<LogoutRequest> logoutRequests = logoutManager.performLogout(ticket);
+            logoutRequests = handlerDestroy(ticket);
+
             this.ticketRegistry.deleteTicket(ticketGrantingTicketId);
-
-            doPublishEvent(new CasTicketGrantingTicketDestroyedEvent(this, ticket));
-
             return logoutRequests;
         } catch (final InvalidTicketException e) {
             logger.debug("TicketGrantingTicket [{}] cannot be found in the ticket registry.", ticketGrantingTicketId);
+            if(ticketToDestroy != null)
+            {
+            	if(ticketToDestroy.isRoot())
+            	{
+            		logger.info("tikcet details {}", this.ticketToDestroy.getId());
+            		logoutRequests = handlerDestroy(this.ticketToDestroy);
+            	}
+            }
+            else
+            {
+            	logger.debug("the TGT is null. ignore");
+            }
         }
-        return Collections.emptyList();
+        return logoutRequests;
     }
 
     @Audit(

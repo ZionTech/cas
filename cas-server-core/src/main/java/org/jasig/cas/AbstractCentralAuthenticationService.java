@@ -98,6 +98,11 @@ public abstract class AbstractCentralAuthenticationService implements CentralAut
     /** Factory to create the principal type. **/
     @NotNull
     protected PrincipalFactory principalFactory = new DefaultPrincipalFactory();
+    
+    /**
+     * The thread local for TGT.
+     */
+    protected final ThreadLocal<TicketGrantingTicket> threadLocalTGT = new ThreadLocal<TicketGrantingTicket>();
 
     /**
      * Instantiates a new Central authentication service impl.
@@ -153,20 +158,6 @@ public abstract class AbstractCentralAuthenticationService implements CentralAut
         this.eventPublisher.publishEvent(e);
     }
 
-    /**
-     * placeholder for TGT.
-     */
-    protected TicketGrantingTicket ticketToDestroy;
-
-    /**
-     * save a copy of TGT to destroy session when TGT session is timedout.
-     * 
-     * @param ticketToDestroy The {@link TicketGrantingTicket}.
-     */
-    public void setTicketToDestroy(TicketGrantingTicket ticketToDestroy) {
-		this.ticketToDestroy = ticketToDestroy;
-	}
-
     
     /**
      * Handle TGT destroy.
@@ -174,11 +165,11 @@ public abstract class AbstractCentralAuthenticationService implements CentralAut
      * @param ticket The {@link TicketGrantingTicket}.
      * @return The {@link List} of logout requests.
      */
-    protected List<LogoutRequest>  handlerDestroy( final TicketGrantingTicket ticket )
-    {
-   	    final List<LogoutRequest> logoutRequests =  logoutManager.performLogout(ticket);
-        doPublishEvent(new CasTicketGrantingTicketDestroyedEvent(this, ticket));
-        return logoutRequests;
+    protected List<LogoutRequest> handlerDestroy(final TicketGrantingTicket ticket) {
+	logger.info("initiated the perform logouts");
+	final List<LogoutRequest> logoutRequests = logoutManager.performLogout(ticket);
+	doPublishEvent(new CasTicketGrantingTicketDestroyedEvent(this, ticket));
+	return logoutRequests;
     }
     
     
@@ -209,7 +200,7 @@ public abstract class AbstractCentralAuthenticationService implements CentralAut
                 if (ticket.isExpired()) {
                 	if(((TicketGrantingTicket) ticket).isRoot())
                 	{
-                	 setTicketToDestroy((TicketGrantingTicket) ticket);
+                		threadLocalTGT.set((TicketGrantingTicket) ticket);
                 	}
                     this.ticketRegistry.deleteTicket(ticketId);
                     logger.debug("Ticket [{}] has expired and is now deleted from the ticket registry.", ticketId);

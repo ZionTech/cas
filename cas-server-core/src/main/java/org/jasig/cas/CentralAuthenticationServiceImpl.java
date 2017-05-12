@@ -112,27 +112,31 @@ public final class CentralAuthenticationServiceImpl extends AbstractCentralAuthe
     public List<LogoutRequest> destroyTicketGrantingTicket(@NotNull final String ticketGrantingTicketId) {
     	List<LogoutRequest> logoutRequests  = Collections.emptyList();
         try {
-            logger.debug("Removing ticket [{}] from registry...", ticketGrantingTicketId);
-            final TicketGrantingTicket ticket = getTicket(ticketGrantingTicketId, TicketGrantingTicket.class);
-            logger.debug("Ticket found. Processing logout requests and then deleting the ticket...");
-            logoutRequests = handlerDestroy(ticket);
+	    logger.debug("Removing ticket [{}] from registry...", ticketGrantingTicketId);
+	    final TicketGrantingTicket ticket = getTicket(ticketGrantingTicketId, TicketGrantingTicket.class);
+	    if (ticket == null) {
+		logger.info("got invalid ticket");
+		throw new InvalidTicketException(ticketGrantingTicketId);
+	    }
+	    logger.debug("Ticket found. Processing logout requests and then deleting the ticket...");
+	    logoutRequests = handlerDestroy(ticket);
 
-            this.ticketRegistry.deleteTicket(ticketGrantingTicketId);
-            return logoutRequests;
+	    this.ticketRegistry.deleteTicket(ticketGrantingTicketId);
+	    return logoutRequests;
         } catch (final InvalidTicketException e) {
             logger.debug("TicketGrantingTicket [{}] cannot be found in the ticket registry.", ticketGrantingTicketId);
-            if(ticketToDestroy != null)
-            {
-            	if(ticketToDestroy.isRoot())
-            	{
-            		logger.info("tikcet details {}", this.ticketToDestroy.getId());
-            		logoutRequests = handlerDestroy(this.ticketToDestroy);
-            	}
-            }
-            else
-            {
-            	logger.debug("the TGT is null. ignore");
-            }
+	    TicketGrantingTicket tgt = threadLocalTGT.get();
+	    if (tgt != null) {
+		if (tgt.isRoot()) {
+		    logger.info("tikcet details {}", tgt.getId());
+		    logoutRequests = handlerDestroy(tgt);
+		    threadLocalTGT.set(null);
+		} else {
+		    logger.info("the ticket is not TGT");
+		}
+	    } else {
+		logger.debug("the TGT is null. ignore");
+	    }
         }
         return logoutRequests;
     }

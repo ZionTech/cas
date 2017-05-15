@@ -6,6 +6,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.NotAuthorizedException;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.http.Consts;
+import org.apache.http.auth.params.AuthPNames;
+import org.apache.http.util.EncodingUtils;
 import org.jasig.cas.CentralAuthenticationService;
 import org.jasig.cas.authentication.principal.Principal;
 import org.jasig.cas.ticket.Ticket;
@@ -59,38 +63,61 @@ public class DeleteUserSessionController {
 
 	@RequestMapping(value = "/invalidateUserSession", method = RequestMethod.POST)
 	public final ResponseEntity<String> deleteUserSession(@RequestParam("deletedUserId") final String userId,
-			@RequestParam("loggedInUserId") final String loggedInUserId, final HttpServletRequest request) {
-		final Collection<Ticket> tickets = centralAuthenticationService.getTickets(Predicates.<Ticket>alwaysTrue());
-		LOGGER.debug("Tickets count {}", (tickets == null) ? 0 : tickets.size());
-		try {
-			if (checkAcess(tickets, loggedInUserId, request)) {
-				for (final Ticket ticket : tickets) {
-					if (ticket instanceof TicketGrantingTicket && !ticket.isExpired()) {
-						final TicketGrantingTicket tgticket = (TicketGrantingTicket) ticket;
-						final Principal principal = getPricipal(tgticket);
-						if (principal != null && principal.getId().equalsIgnoreCase(userId)) {
-							LOGGER.debug("Destory the TGT or PGT for deleted user {}, ticketId {}", userId,
-									tgticket.getId());
-							centralAuthenticationService.destroyTicketGrantingTicket(tgticket.getId());
-						}
-					}
-				}
-			} else {
-				LOGGER.error(
-						"Check access failed for logged in user. Logged in user should be a buyer or tenant admin");
-				throw new NotAuthorizedException("Unauthorized: Check access failed for logged in user");
-			}
-		} catch (final NotAuthorizedException e) {
-			LOGGER.error("Exception occured While checking access for logged in user {} .", loggedInUserId);
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
-		} catch (final Exception e) {
-			LOGGER.error("Exception occured While deleting user session and its attributes for deleted user {} .",
-					userId);
-			return new ResponseEntity<>("Exception occured While deleting user session ",
-					HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		return new ResponseEntity<>(HttpStatus.OK);
+	    final HttpServletRequest request) {
+	String loggedInUserId = "";
+	final String authHeader = request.getHeader("Authorization");
+	if (authHeader != null && authHeader.startsWith("Basic")) {
+	    String encodedUsernamePassword = authHeader.substring("Basic ".length()).trim();
+	    // Extract credentials
+	    final byte[] decodedString = Base64.decodeBase64(encodedUsernamePassword);
+	    String principalDN = new String(decodedString);
+	    if (principalDN != null && !principalDN.isEmpty()) {
+		loggedInUserId = getPrincipal(principalDN);
+		LOGGER.info("the principal {} ", loggedInUserId);
+
+	    } else {
+		throw new NotAuthorizedException("Not Authorized");
+	    }
+	} else {
+	    // Handle what happens if that isn't the case
+	    throw new NotAuthorizedException("The authorization header is either empty or isn't Basic.");
 	}
+	if (loggedInUserId.isEmpty()) {
+	    LOGGER.warn("principal cannot be empty");
+	    throw new NotAuthorizedException("Not Authorized. Principal cannot be empty");
+	}
+	final Collection<Ticket> tickets = centralAuthenticationService.getTickets(Predicates.<Ticket>alwaysTrue());
+
+	LOGGER.debug("Tickets count {}", (tickets == null) ? 0 : tickets.size());
+	try {
+	    if (checkAcess(tickets, loggedInUserId, request)) {
+		for (final Ticket ticket : tickets) {
+		    if (ticket instanceof TicketGrantingTicket && !ticket.isExpired()) {
+			final TicketGrantingTicket tgticket = (TicketGrantingTicket) ticket;
+			final Principal principal = getPricipal(tgticket);
+			if (principal != null && principal.getId().equalsIgnoreCase(userId)) {
+			    LOGGER.debug("Destory the TGT or PGT for deleted user {}, ticketId {}", userId,
+				    tgticket.getId());
+			    centralAuthenticationService.destroyTicketGrantingTicket(tgticket.getId());
+			}
+		    }
+		}
+	    } else {
+		LOGGER.error(
+			"Check access failed for logged in user. Logged in user should be a buyer or tenant admin");
+		throw new NotAuthorizedException("Unauthorized: Check access failed for logged in user");
+	    }
+	} catch (final NotAuthorizedException e) {
+	    LOGGER.error("Exception occured While checking access for logged in user {} .", loggedInUserId);
+	    return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+	} catch (final Exception e) {
+	    LOGGER.error("Exception occured While deleting user session and its attributes for deleted user {} .",
+		    userId);
+	    return new ResponseEntity<>("Exception occured While deleting user session ",
+		    HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	return new ResponseEntity<>(HttpStatus.OK);
+    }
 
 	/**
 	 * return the tenantId.
@@ -108,6 +135,21 @@ public class DeleteUserSessionController {
 		}
 		return tenantId;
 	}
+	
+    /**
+     * parses the principal from DN.
+     * 
+     * @param principalDN The DN.
+     * @return The principal.
+     */
+    private String getPrincipal(final String principalDN) {
+	LOGGER.trace("resolving DN for {} ", principalDN);
+	if (principalDN != null && !principalDN.isEmpty()) {
+	    final String mailAt = principalDN.split(",")[0];
+	    return mailAt.split("=")[1];
+	}
+	return "";
+    }
 
 	/**
 	 * Check access for the logged in user can access for delete session or not

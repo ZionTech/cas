@@ -59,14 +59,26 @@ public final class ProxyGrantingTicketImpl extends TicketGrantingTicketImpl impl
     }
 
     @Override
-    public ProxyTicket grantProxyTicket(final String id, final Service service, final ExpirationPolicy expirationPolicy,
+    public final synchronized ProxyTicket grantProxyTicket(final String id, final Service service, final ExpirationPolicy expirationPolicy,
                                         final boolean onlyTrackMostRecentSession) {
         final ProxyTicket serviceTicket = new ProxyTicketImpl(id, this,
                 service, this.getCountOfUses() == 0,
                 expirationPolicy);
 
         updateServiceAndTrackSession(serviceTicket.getId(), service, onlyTrackMostRecentSession);
+        updateTGTStatus();
         return serviceTicket;
     }
+    
+    
+    /**
+     *  updateTGTStatus is used for update the lastTimeUsed, 
+     *  previousLastTimeUsed, countOfUses of root ticket (TGT) of current PGT
+     */
+    private void updateTGTStatus() {
+    	TicketGrantingTicketImpl tgt = (TicketGrantingTicketImpl) getRoot();
+    	tgt.updateState();
+    }
+
 
 }

@@ -54,7 +54,7 @@ public class TicketGrantingTicketImpl extends AbstractTicket implements TicketGr
 
     /** Flag to enforce manual expiration. */
     @Column(name="EXPIRED", nullable=false)
-    private Boolean expired = Boolean.FALSE;
+    private volatile boolean expired = Boolean.FALSE;
 
     /** Service that produced a proxy-granting ticket. */
     @Column(name="PROXIED_BY", nullable=true)
@@ -202,7 +202,7 @@ public class TicketGrantingTicketImpl extends AbstractTicket implements TicketGr
      * Remove all services of the TGT (at logout).
      */
     @Override
-    public final void removeAllServices() {
+    public final synchronized void removeAllServices() {
         services.clear();
     }
 

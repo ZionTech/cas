@@ -21,15 +21,11 @@ define(
 			el: 'body',
 			template: false,
 			regions: {
-				loginHeader: "#ot-header",
-				main: "#ot-main",
-				loginFooter: "#ot-footer"
+				main: "#login-main"
 			},
 			onRender: function() {
 				console.log("Wavity Login application layout onRender called");
-				this.loginHeader.show(new LoginHeaderView());
 				this.main.show(new LoginLayout());
-				this.loginFooter.show(new LoginFooterView());
 			},			
 			onShow: function() {
 				console.log("Wavity application layout onShow called");

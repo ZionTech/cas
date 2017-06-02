@@ -2,10 +2,6 @@ body {
 	font-family: 'AvenirLTStd45Book';
 }
 
-div {
-	color: #7c7c7c;
-}
-
 @font-face {
 	font-family: 'AvenirLTStd45Book';
 	font-style: normal;
@@ -13,249 +9,92 @@ div {
 	src: url('../fonts/AvenirLTStd-Book.woff') format('woff');
 }
 
-.form-control {
-	box-shadow : none;
-}
-#loginColumns {	
-	margin: 0 auto;
-    max-width: 900px;
-    padding: 200px 40px 10px;
-}
-#loginColumns .form-group .form-control {
-	border-bottom-left-radius: 0;
-    border-bottom-right-radius: 20px;
-    border-color: #808080;
-    border-image: none;
-    border-style: none solid solid none;
-    border-top-right-radius: 0;
-    border-width: medium 1px 1px medium;
-    height: 50px;
-    width: 100%;
-}
-#loginColumns .socialNetWorks {
-    border-color: #808080;
-    border-image: none;
-    border-style: solid none none solid;
-    border-top-left-radius: 20px;
-    border-width: 1px medium medium 1px;
-    height: 50px;
-    width: 100%;
-}
-#loginColumns .socialNetWorks label {
-	padding: 15px;
-	color: #777;
-}
-#loginColumns .socialNetWorks a {
-	padding: 16px;
-}
-#loginColumns p.text-muted {
-	margin : 13px 0 10px 10px;
-	font-size: 16px;
-}
-.usertext:focus, .passwordtext:focus {
-	box-shadow : none;
-}
-#top_notification {
-	position: relative;
-	margin-bottom: 10px;
+.main {
+	background-color: white;
+	position: absolute;
+	display: table;
+	width: 100%;
+	height: 100%;
 }
 
-.notification_container {
-	z-index: 91;
-	-webkit-transform: translateY(0);
-	transform: translateY(0);
+.verticalCenterContent {
+	display: table-cell;
+	vertical-align: middle;
 }
 
-.notification_error .notification_inner {
-	background: #e03e45;
-	background: rgba(166, 44, 56, .9);
-	box-shadow: 0 2px 1px rgba(1, 1, 1, .25);
-	border: 1px solid #850a16;
-	background-clip: padding-box;
-	color: #fff;
+.contentbox {
+	max-width: 550px;
+	padding: 30px 30px 30px 30px;
+	box-shadow: 2px 2px 3px 3px #d3d3d3;
 }
 
-.notification_inner {
-	height: 30px;
-	padding: 0 11px;
-	font-size: 11px;
-	margin: 0 auto;
-	border-radius: 5px !important;
-	-webkit-border-radius: 5px !important;
-	width: 100% !important;
-	text-align: center;
-	margin-bottom: 10px;
-	display: none;
+.externalLinks {
+	max-width: 550px;
+	text-align: right;
 }
 
-.notification_message {
-	padding-top: 10px;
-	font-size: 14px;
-	margin-left: 5px;
-	font-family: 'Fira Sans', sans-serif;
+.tenantLogo {
+	margin-bottom: 35px;
 }
 
-.notification-close {
-	position: relative;
-	font-weight: bold;
-	float: right;
-	cursor: pointer;
+#login-main #loginForm .form-control {
+	box-shadow: none;
+	border-color: #eee;
+	border-image: none;
+	border-style: none none solid none;
+	border-radius: 0;
+	width: 100%;
+	padding: 0;
 }
 
-.notification-close>.fa-times {
-	color: #fff;
-	height: px;
+.blue-border {
+	border-color: rgb(0, 150, 207) !important;
 }
 
-.timesIcon {
-	font-size: 13px !important;
+#login-main .textFields input:-webkit-autofill {
+	-webkit-box-shadow: 0 0 0 30px white inset !important;
 }
 
-.btn {
-  display: inline-block;
-  padding: 6px 12px;
-  margin-bottom: 0;
-  font-size: 14px;
-  font-weight: normal;
-  line-height: 1.42857143;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: middle;
-  cursor: pointer;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
-  background-image: none;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  padding: 10px 16px;
-}
- 
-.btn-primary {
-  color: #fff;
-  background-color: #428bca;
-  border-color: #357ebd;
-}
-
-.btn-primary:hover,
-.btn-primary:focus,
-.btn-primary:active,
-.btn-primary.active,
-.open .dropdown-toggle.btn-primary {
-  color: #fff;
-  background-color: none !important;
-  border-color: none !important;
-}
-
-.tenant-logo-wrapper {
-	height: 350px; 
-	text-align: center;
-}
-
-.tenant-logo-wrapper img {
-	position: relative; 
-	top: 50%; 
-	transform: translateY(-50%);
-}
-
-.footer.login-footer {
-	background-color: #fff;
-}
-
-.footer.login-footer img {
-	margin-left: 10px;
-}
-
-/***********************
-  OUTLINE BUTTONS
-************************/
-
-.btn.outline {
-    background: none;
-    padding: 7px 0 0;
-    font-size : 24px;
-    font-weight: normal;
-}
-.btn-primary.outline {    
-    color: #337ab7;
-}
-.btn-primary.outline:hover, .btn-primary.outline:focus, .btn-primary.outline:active, .btn-primary.outline.active, .open > .dropdown-toggle.btn-primary {
-    color: none !important;
-    border-color: none !important;
-}
-.btn-primary.outline:active, .btn-primary.outline.active {
-    border-color: none !important;
-    color: none !important;
-    box-shadow: none ;
-}
-
-/***********************
-  CUSTON BTN VALUES
-************************/
-
-.btn {
-    padding: 14px 24px;
-    border: 0 none;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-.btn:focus, .btn:active:focus, .btn.active:focus {
-    outline: 0 none;
-    background-color: none !important;
-  	border-color: none !important;
-}
-.btn-primary:active:hover,
-.btn-primary.active:hover,
-.open > .dropdown-toggle.btn-primary:hover,
-.btn-primary:active:focus,
-.btn-primary.active:focus,
-.open > .dropdown-toggle.btn-primary:focus,
-.btn-primary:active.focus,
-.btn-primary.active.focus,
-.open > .dropdown-toggle.btn-primary.focus {
-  color: #337ab7;
-  background-color: #fff !important;
-  border-color: #122b40;
-}
-
-/****************
-	ERRORS.jsp
-*****************/
-.cas_errors {
-	color: #333; 
-	font-size: 12px; 
-	border: 1px dotted #BB0000;
-	color: #BB0000;
-	padding: 20px; 
-	height:400px;
-}
-
-.cas_errors img {
-	float: left;
-}
-
-.cas_errors h2 {
-	margin: 9px 0px 20px 40px; 
-	font-size:14px; 
-	font-weight: bold;
-}
-.errorLoginMsg {
-	color: #F00;
-	text-align: center;
-	float: right;
-	margin-top: -134px;
-	margin-right: 16%;
-	font-size:14px;
+#login-main #loginForm .btn {
+	color: black;
+	background: transparent;
+	text-align: left;
+	padding: 0;
+	border: 0;
 }
 
 .color-red {
 	color: #F00;
 }
 
-@media (min-width: 992px) {
-   #serviceIcon {
-      float: right;
-  }
+.color-blue {
+	color: rgb(0, 150, 207) !important;
+}
+
+.color-teal {
+	color: #0ff;
+}
+
+.color-grey {
+	color: rgb(150, 150, 150);
+}
+
+.color-black {
+	color: black;
+}
+
+.text-10 {
+	font-size: 10px !important;
+}
+
+.text-12 {
+	font-size: 12px !important;
+}
+
+.text-14 {
+	font-size: 14px !important;
+}
+
+.text-16 {
+	font-size: 16px !important;
 }

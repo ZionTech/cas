@@ -26,31 +26,13 @@ define(
 			console.log("Login View Initialize()");
 		},
 		events: {
-			"click .notification-close"	:	"errormsgclose",
+			"focus #username": "usernameFocus",
+			"blur #username": "usernameBlur",
+			"focus #password": "passwordFocus",
+			"blur #password": "passwordBlur",
 			"submit #loginForm" : "login"
 		},
 		onShow: function(){
-			$(".usertext").focus();
-			$('#myCarousel').carousel({
-				interval: 3000
-			});		
-			if(Login.hasOwnProperty('Error'))
-			{
-				$('.notification_inner').show(500);
-	            $('.ot_username, .ot_password').addClass('has-error');
-	            $('.ot_username, .ot_password').find('.help-inline').addClass('oneteam-error-msg');
-			}
-			/*$("#appIcon").attr("src", $('input[name=appLogo]').val());
-			$("#domainIcon").attr("src", $('input[name=tenantLogo]').val());
-
-			if($("#domainIcon").width() > 400 || $("#domainIcon").width() <= 0) {
-				$("#domainIcon").width(400);
-			}
-
-			if($("#domainIcon").height() > 400 || $("#domainIcon").height() <= 0) {
-				$("#domainIcon").height(400);
-			}*/
-
 			$('#loginForm input[name=lt]').val($('input[name=loginTicket]').val());
 			$('#loginForm input[name=execution]').val($('input[name=flowExecutionKey]').val());
 			$('#loginForm').attr('action', $('#tempForm').attr('action'));
@@ -72,6 +54,26 @@ define(
 			this.updateTenantBranding();
 			this.addForgetPasswordLink();
 			this.checkLoginErrorMessage();
+		},
+		usernameFocus: function(event){
+			$('.userNameLabel').show();
+			$('#username').addClass('blue-border');
+		},
+		usernameBlur: function(event){
+			if($('#username').val().trim() == ""){
+				$('.userNameLabel').hide();
+			}
+			$('#username').removeClass('blue-border');
+		},
+		passwordFocus: function(event){
+			$('.passwordLabel').show();
+			$('#password').addClass('blue-border');
+		},
+		passwordBlur: function(event){
+			if($('#password').val().trim() == ""){
+				$('.passwordLabel').hide();
+			}
+			$('#password').removeClass('blue-border');
 		},
 		updateTenantBranding: function(){
 			var serviceUrl = this.getParam("service");

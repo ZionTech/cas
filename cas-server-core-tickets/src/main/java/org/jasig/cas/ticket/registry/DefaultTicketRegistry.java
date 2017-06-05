@@ -1,7 +1,16 @@
 package org.jasig.cas.ticket.registry;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+import javax.validation.constraints.NotNull;
+
 import org.jasig.cas.authentication.principal.Service;
 import org.jasig.cas.logout.LogoutManager;
 import org.jasig.cas.ticket.ServiceTicket;
@@ -29,16 +38,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
-
-import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
-import javax.validation.constraints.NotNull;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Implementation of the TicketRegistry that is backed by a ConcurrentHashMap.
@@ -145,6 +144,33 @@ public final class DefaultTicketRegistry extends AbstractTicketRegistry implemen
         logger.debug("Removing ticket [{}] from the registry.", ticket);
         return (this.cache.remove(ticketId) != null);
     }
+    
+    
+    /**
+     * helper method to remove tickets for cache.
+     * 
+     * @param ticketId The ticket id.
+     * @param cache The cache.
+     * @return true is the ticket is deleted. else false.
+     */
+    public boolean deleteTicket(final String ticketId, final Map<String, Ticket> cache) {
+	if (ticketId == null) {
+	    return false;
+	}
+	
+	final Ticket ticket = cache.get(ticketId);
+	if (ticket == null) {
+	    return false;
+	}
+	
+	if (ticket instanceof TicketGrantingTicket) {
+	    logger.debug("Removing children of ticket [{}] from the registry.", ticket);
+	    deleteChildren((TicketGrantingTicket) ticket);
+	}
+	
+	logger.debug("Removing ticket [{}] from the registry.", ticket);
+	return (cache.remove(ticketId) != null);
+    }
 
     /**
      * Delete TGT's service tickets.
@@ -215,6 +241,7 @@ public final class DefaultTicketRegistry extends AbstractTicketRegistry implemen
                 final JobFactory jobFactory = new CasSpringBeanJobFactory(this.applicationContext);
                 final SchedulerFactory schFactory = new StdSchedulerFactory();
                 final Scheduler sch = schFactory.getScheduler();
+                sch.getContext().put("ticketsCache", cache);
                 sch.setJobFactory(jobFactory);
                 sch.start();
                 logger.debug("Started {} scheduler", this.getClass().getSimpleName());
@@ -234,27 +261,37 @@ public final class DefaultTicketRegistry extends AbstractTicketRegistry implemen
         SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
 
         try {
+            //get the cache instance from the scheduler context
+            Map<String, Ticket> cacheBean = (Map<String, Ticket>) jobExecutionContext.getScheduler().getContext().get("ticketsCache");
+            logger.info("total tickets in the registry {} ", cacheBean.size());
+            //prepare an unmodifiablecollection.
+            final Collection<Ticket> allTickets = Collections.unmodifiableCollection(cacheBean.values());
             logger.info("Beginning ticket cleanup...");
-            final Collection<Ticket> ticketsToRemove = Collections2.filter(this.getTickets(), new Predicate<Ticket>() {
-                @Override
-                public boolean apply(@Nullable final Ticket ticket) {
-                    if (ticket.isExpired()) {
-                        if (ticket instanceof TicketGrantingTicket) {
-                            logger.debug("Cleaning up expired ticket-granting ticket [{}]", ticket.getId());
-                            logoutManager.performLogout((TicketGrantingTicket) ticket);
-                            deleteTicket(ticket.getId());
-                        } else if (ticket instanceof ServiceTicket) {
-                            logger.debug("Cleaning up expired service ticket [{}]", ticket.getId());
-                            deleteTicket(ticket.getId());
-                        } else {
-                            logger.warn("Unknown ticket type [{} found to clean", ticket.getClass().getSimpleName());
-                        }
-                        return true;
+            //filter the expired tickets.
+	    final Collection<Ticket> ticketsToRemove = allTickets
+                    .parallelStream()
+                    .filter(Ticket::isExpired)
+                    .collect(Collectors.toSet());
+            logger.debug("{} expired tickets found.", ticketsToRemove.size());
+            int count = 0;
+            for (final Ticket ticket : ticketsToRemove) {
+                if (ticket instanceof TicketGrantingTicket) {
+                    logger.debug("Cleaning up expired ticket-granting ticket [{}]", ticket.getId());
+                    logoutManager.performLogout((TicketGrantingTicket) ticket);
+                   if( deleteTicket(ticket.getId(), cacheBean)){
+                       count++;
+                   }
+                } else if (ticket instanceof ServiceTicket) {
+                    logger.debug("Cleaning up expired service ticket [{}]", ticket.getId());
+                    if( deleteTicket(ticket.getId(), cacheBean)){
+                        count++;
                     }
-                    return false;
+                } else {
+                    logger.warn("Unknown ticket type [{} found to clean", ticket.getClass().getSimpleName());
                 }
-            });
-            logger.info("{} expired tickets found and removed.", ticketsToRemove.size());
+            }
+            logger.info("{} expired tickets found and removed.", count);
+            logger.trace("{} expired tickets found and removed.", count);
         } catch (final Exception e) {
             logger.error(e.getMessage(), e);
         }

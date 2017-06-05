@@ -3,6 +3,9 @@ package org.jasig.cas.ticket;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.util.Assert;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Lob;
@@ -50,19 +53,19 @@ public abstract class AbstractTicket implements Ticket, TicketState {
 
     /** The last time this ticket was used. */
     @Column(name="LAST_TIME_USED")
-    private long lastTimeUsed;
+    private final AtomicLong lastTimeUsed = new AtomicLong();
 
     /** The previous last time this ticket was used. */
     @Column(name="PREVIOUS_LAST_TIME_USED")
-    private long previousLastTimeUsed;
+    private final AtomicLong previousLastTimeUsed = new AtomicLong();
 
     /** The time the ticket was created. */
     @Column(name="CREATION_TIME")
-    private long creationTime;
+    private final AtomicLong creationTime = new AtomicLong();
 
     /** The number of times this was used. */
     @Column(name="NUMBER_OF_TIMES_USED")
-    private int countOfUses;
+    private final AtomicInteger countOfUses = new AtomicInteger();
 
     /**
      * Instantiates a new abstract ticket.
@@ -86,8 +89,8 @@ public abstract class AbstractTicket implements Ticket, TicketState {
         Assert.notNull(id, "id cannot be null");
 
         this.id = id;
-        this.creationTime = System.currentTimeMillis();
-        this.lastTimeUsed = System.currentTimeMillis();
+        this.creationTime.set(System.currentTimeMillis());
+        this.lastTimeUsed.set(System.currentTimeMillis());
         this.expirationPolicy = expirationPolicy;
         this.ticketGrantingTicket = ticket;
     }
@@ -108,19 +111,19 @@ public abstract class AbstractTicket implements Ticket, TicketState {
      * @see ExpirationPolicy
      */
     protected final void updateState() {
-        this.previousLastTimeUsed = this.lastTimeUsed;
-        this.lastTimeUsed = System.currentTimeMillis();
-        this.countOfUses++;
+        this.previousLastTimeUsed.set(this.lastTimeUsed.get());
+        this.lastTimeUsed.set(System.currentTimeMillis());
+        this.countOfUses.getAndIncrement();
     }
 
     @Override
     public final int getCountOfUses() {
-        return this.countOfUses;
+        return this.countOfUses.get();
     }
 
     @Override
     public final long getCreationTime() {
-        return this.creationTime;
+        return this.creationTime.get();
     }
 
     @Override
@@ -130,12 +133,12 @@ public abstract class AbstractTicket implements Ticket, TicketState {
 
     @Override
     public final long getLastTimeUsed() {
-        return this.lastTimeUsed;
+        return this.lastTimeUsed.get();
     }
 
     @Override
     public final long getPreviousTimeUsed() {
-        return this.previousLastTimeUsed;
+        return this.previousLastTimeUsed.get();
     }
 
     @Override

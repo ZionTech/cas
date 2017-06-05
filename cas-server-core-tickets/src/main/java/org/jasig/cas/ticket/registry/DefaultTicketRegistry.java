@@ -263,6 +263,7 @@ public final class DefaultTicketRegistry extends AbstractTicketRegistry implemen
         try {
             //get the cache instance from the scheduler context
             Map<String, Ticket> cacheBean = (Map<String, Ticket>) jobExecutionContext.getScheduler().getContext().get("ticketsCache");
+            logger.info("total tickets in the registry {} ", cacheBean.size());
             //prepare an unmodifiablecollection.
             final Collection<Ticket> allTickets = Collections.unmodifiableCollection(cacheBean.values());
             logger.info("Beginning ticket cleanup...");

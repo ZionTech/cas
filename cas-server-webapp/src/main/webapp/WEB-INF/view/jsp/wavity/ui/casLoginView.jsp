@@ -55,6 +55,9 @@
 <script type="text/javascript" src="<c:url value="${loginJsRequire}" />"></script>
 <script>
 	require([ 'themes/wavity/res/index' ], function() {
+		require.config({
+			urlArgs: "version=1.01"
+		});
 		require([ 'jquery', '../wavity/js/init/logininit' ], function($,
 				LoginInit) {
 			$(function() {

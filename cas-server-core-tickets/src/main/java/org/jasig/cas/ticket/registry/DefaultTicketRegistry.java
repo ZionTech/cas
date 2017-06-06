@@ -273,25 +273,39 @@ public final class DefaultTicketRegistry extends AbstractTicketRegistry implemen
                     .filter(Ticket::isExpired)
                     .collect(Collectors.toSet());
             logger.debug("{} expired tickets found.", ticketsToRemove.size());
-            int count = 0;
+            int tgtCount = 0;
+            int pgtCount = 0;
+            int stCount = 0;
+            int ptCount = 0;
             for (final Ticket ticket : ticketsToRemove) {
+        	final String tktId = ticket.getId();
                 if (ticket instanceof TicketGrantingTicket) {
-                    logger.debug("Cleaning up expired ticket-granting ticket [{}]", ticket.getId());
+                    logger.debug("Cleaning up expired ticket-granting ticket [{}]", tktId);
                     logoutManager.performLogout((TicketGrantingTicket) ticket);
-                   if( deleteTicket(ticket.getId(), cacheBean)){
-                       count++;
+                   if( deleteTicket(tktId, cacheBean)){
+                       if(tktId.startsWith("TGT-")){
+                	   tgtCount++;
+                       } else {
+                	   pgtCount++;
+                       }
                    }
                 } else if (ticket instanceof ServiceTicket) {
                     logger.debug("Cleaning up expired service ticket [{}]", ticket.getId());
                     if( deleteTicket(ticket.getId(), cacheBean)){
-                        count++;
+                	if(tktId.startsWith("ST-")){
+                 	   stCount++;
+                        } else {
+                 	   ptCount++;
+                        }
                     }
                 } else {
                     logger.warn("Unknown ticket type [{} found to clean", ticket.getClass().getSimpleName());
                 }
             }
-            logger.info("{} expired tickets found and removed.", count);
-            logger.trace("{} expired tickets found and removed.", count);
+            logger.trace("ticket removed ServiceTickets: {}, ProxyTickets: {}, TicketGrantingTicket: {}, ProxyGrantingTickets: {} ", stCount, ptCount, tgtCount, pgtCount);
+            int totalCount = stCount + ptCount + pgtCount + tgtCount;
+            logger.info("{} expired tickets found and removed.", totalCount);
+            logger.trace("{} expired tickets found and removed.", totalCount);
         } catch (final Exception e) {
             logger.error(e.getMessage(), e);
         }

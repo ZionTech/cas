@@ -147,20 +147,28 @@ define(
 			var username = $('#username');
 			if(username.val().trim() == ""){
 				$('.userNameInputErrorMessage').text("Please enter your email");
+				$('.userNameLabel').addClass("color-red");
+				$('#username').addClass('errorBackgroundLine');
 				allValid = false;
 				event.preventDefault();
 			} else {
 				$('.userNameInputErrorMessage').text("");
+				$('.userNameLabel').removeClass("color-red");
+				$('#username').removeClass('errorBackgroundLine');
 			}
 			
 			//Validate Password
 			var password = $('#password');
 			if(password.val().trim() == ""){
 				$('.passwordInputErrorMessage').text("Please enter your password");
+				$('.passwordLabel').addClass("color-red");
+				$('#password').addClass('errorBackgroundLine');
 				allValid = false;
 				event.preventDefault();
 			}else {
 				$('.passwordInputErrorMessage').text("");
+				$('.passwordLabel').removeClass("color-red");
+				$('#password').removeClass('errorBackgroundLine');
 			}
 		}
 	});

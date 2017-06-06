@@ -26,31 +26,13 @@ define(
 			console.log("Login View Initialize()");
 		},
 		events: {
-			"click .notification-close"	:	"errormsgclose",
+			"focus #username": "usernameFocus",
+			"blur #username": "usernameBlur",
+			"focus #password": "passwordFocus",
+			"blur #password": "passwordBlur",
 			"submit #loginForm" : "login"
 		},
 		onShow: function(){
-			$(".usertext").focus();
-			$('#myCarousel').carousel({
-				interval: 3000
-			});		
-			if(Login.hasOwnProperty('Error'))
-			{
-				$('.notification_inner').show(500);
-	            $('.ot_username, .ot_password').addClass('has-error');
-	            $('.ot_username, .ot_password').find('.help-inline').addClass('oneteam-error-msg');
-			}
-			/*$("#appIcon").attr("src", $('input[name=appLogo]').val());
-			$("#domainIcon").attr("src", $('input[name=tenantLogo]').val());
-
-			if($("#domainIcon").width() > 400 || $("#domainIcon").width() <= 0) {
-				$("#domainIcon").width(400);
-			}
-
-			if($("#domainIcon").height() > 400 || $("#domainIcon").height() <= 0) {
-				$("#domainIcon").height(400);
-			}*/
-
 			$('#loginForm input[name=lt]').val($('input[name=loginTicket]').val());
 			$('#loginForm input[name=execution]').val($('input[name=flowExecutionKey]').val());
 			$('#loginForm').attr('action', $('#tempForm').attr('action'));
@@ -72,6 +54,32 @@ define(
 			this.updateTenantBranding();
 			this.addForgetPasswordLink();
 			this.checkLoginErrorMessage();
+			this.focusUserNameInput();
+		},
+		focusUserNameInput: function(event){
+			setTimeout(function(){
+				$('#username').focus();
+			}, 500);
+		},
+		usernameFocus: function(event){
+			$('.userNameLabel').show();
+			$('#username').attr("placeholder", "");
+		},
+		usernameBlur: function(event){
+			if($('#username').val().trim() == ""){
+				$('.userNameLabel').hide();
+			}
+			$('#username').attr("placeholder", "Enter Email");
+		},
+		passwordFocus: function(event){
+			$('.passwordLabel').show();
+			$('#password').attr("placeholder", "");
+		},
+		passwordBlur: function(event){
+			if($('#password').val().trim() == ""){
+				$('.passwordLabel').hide();
+			}
+			$('#password').attr("placeholder", "Password");
 		},
 		updateTenantBranding: function(){
 			var serviceUrl = this.getParam("service");
@@ -90,15 +98,13 @@ define(
 					var msg = $(errors[i]).val();
 					this.showErrorMessage(msg);
 				}
-				$('.serverErrorMsg').css("margin-top","15px").show();
 			}
 		},
 		showErrorMessage: function(msg){
-			var error = '<p class="color-red">' + msg + '</p>';
-			$('.serverErrorMsg').append(error);
+			$('#errorMessage').text(msg).show();
 		},
 		hideErrorMessage: function(){
-			$('.serverErrorMsg').hide();
+			$('#errorMessage').text("").hide();
 		},
 		errormsgclose: function() {
 			$('.notification_inner').hide(500);
@@ -140,21 +146,21 @@ define(
 			//Validate Username
 			var username = $('#username');
 			if(username.val().trim() == ""){
-				username.next().text("Username is required");
+				$('.userNameInputErrorMessage').text("Please enter your email");
 				allValid = false;
 				event.preventDefault();
 			} else {
-				username.next().text("");
+				$('.userNameInputErrorMessage').text("");
 			}
 			
 			//Validate Password
 			var password = $('#password');
 			if(password.val().trim() == ""){
-				password.next().text("Password is required");
+				$('.passwordInputErrorMessage').text("Please enter your password");
 				allValid = false;
 				event.preventDefault();
 			}else {
-				password.next().text("");
+				$('.passwordInputErrorMessage').text("");
 			}
 		}
 	});

@@ -56,3 +56,4 @@ git clone git@github.com:Jasig/cas.git
 [downloadcasgithub]: https://github.com/Jasig/cas/archive/master.zip
 [releasenotes]: https://github.com/Jasig/cas/releases
 [casaddons]: https://github.com/unicon-cas-addons
+develop branch

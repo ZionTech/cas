@@ -19,16 +19,25 @@
 					<input type="hidden" name="_eventId" value="submit" />
 					<input type="hidden" name="prevAddress" value="" />
 					<div class="form-group">
-						<span class="userNameLabel color-blue text-12" style="display: none;">Enter Email</span>
+						<div class="inputLabel">
+							<span class="userNameLabel text-12" style="display: none;">Enter Email</span>
+						</div>
 						<input id="username" name="username" class="form-control usertext" placeholder="Enter Email" tabindex="1" accesskey="u" type="text" value="" autocomplete="off">						
-						<span class="help-inline color-red"></span>
+						<div class="formErrorMessage">
+							<span class="help-inline color-red userNameInputErrorMessage"></span>
+						</div>
 					</div>
 					<div class="form-group">
-						<span class="passwordLabel color-blue text-12" style="display: none;">Password</span>
+						<div class="inputLabel">
+							<span class="passwordLabel text-12" style="display: none;">Password</span>
+						</div>
 						<input id="password" name="password" class="form-control passwordtext" name="ot_password" placeholder="Password" tabindex="2" accesskey="p" type="password" value="" autocomplete="off">
-						<span class="help-inline color-red"></span>
+						<div class="formErrorMessage">
+							<span class="help-inline color-red passwordInputErrorMessage"></span>
+						</div>
 					</div>
 					<div class="serverErrorMsg">
+						<span class="color-red text-14" id="errorMessage"></span>
 					</div>
 				</div>
 				<div class="row">

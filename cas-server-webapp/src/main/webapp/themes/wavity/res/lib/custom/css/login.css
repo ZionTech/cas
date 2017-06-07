@@ -23,9 +23,11 @@ body {
 }
 
 .contentbox {
+	height: 350px;
 	max-width: 550px;
 	padding: 30px 30px 30px 30px;
 	box-shadow: 2px 2px 3px 3px #d3d3d3;
+	max-width: 550px;
 }
 
 .externalLinks {
@@ -38,13 +40,33 @@ body {
 }
 
 #login-main #loginForm .form-control {
-	box-shadow: none;
-	border-color: #eee;
-	border-image: none;
-	border-style: none none solid none;
-	border-radius: 0;
 	width: 100%;
 	padding: 0;
+	border: 0;
+	background-image: linear-gradient(#42a5f5, #42a5f5),
+		linear-gradient(rgba(165, 181, 203, .5), rgba(165, 181, 203, .5));
+	background-size: 0 2px, 100% 1px;
+	background-repeat: no-repeat;
+	background-position: center bottom, center calc(100% - 1px);
+	background-color: transparent;
+	transition: background 0s ease-out;
+	float: none;
+	box-shadow: none;
+	border-radius: 0
+}
+
+#login-main #loginForm .form-control:focus {
+	background-size: 100% 2px, 100% 1px;
+	transition-duration: .3s;
+	background-image: linear-gradient(#42a5f5, #42a5f5),
+		linear-gradient(rgba(165, 181, 203, .5), rgba(165, 181, 203, .5))
+}
+
+.errorBackgroundLine {
+	background-size: 100% 2px, 100% 1px;
+	transition-duration: .3s;
+	background-image: linear-gradient(#F00, #F00),
+		linear-gradient(rgba(165, 181, 203, .5), rgba(165, 181, 203, .5)) !important;
 }
 
 .blue-border {
@@ -61,6 +83,22 @@ body {
 	text-align: left;
 	padding: 0;
 	border: 0;
+}
+
+.inputLabel {
+	min-height: 20px;
+}
+
+.userNameLabel {
+	color: rgb(0, 150, 207);
+}
+
+.passwordLabel {
+	color: rgb(0, 150, 207);
+}
+
+.formErrorMessage {
+	min-height: 20px;
 }
 
 .color-red {
@@ -97,4 +135,8 @@ body {
 
 .text-16 {
 	font-size: 16px !important;
+}
+
+.serverErrorMsg {
+	margin-top: 15px;
 }

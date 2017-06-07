@@ -54,26 +54,32 @@ define(
 			this.updateTenantBranding();
 			this.addForgetPasswordLink();
 			this.checkLoginErrorMessage();
+			this.focusUserNameInput();
+		},
+		focusUserNameInput: function(event){
+			setTimeout(function(){
+				$('#username').focus();
+			}, 500);
 		},
 		usernameFocus: function(event){
 			$('.userNameLabel').show();
-			$('#username').addClass('blue-border');
+			$('#username').attr("placeholder", "");
 		},
 		usernameBlur: function(event){
 			if($('#username').val().trim() == ""){
 				$('.userNameLabel').hide();
 			}
-			$('#username').removeClass('blue-border');
+			$('#username').attr("placeholder", "Enter Email");
 		},
 		passwordFocus: function(event){
 			$('.passwordLabel').show();
-			$('#password').addClass('blue-border');
+			$('#password').attr("placeholder", "");
 		},
 		passwordBlur: function(event){
 			if($('#password').val().trim() == ""){
 				$('.passwordLabel').hide();
 			}
-			$('#password').removeClass('blue-border');
+			$('#password').attr("placeholder", "Password");
 		},
 		updateTenantBranding: function(){
 			var serviceUrl = this.getParam("service");
@@ -92,15 +98,13 @@ define(
 					var msg = $(errors[i]).val();
 					this.showErrorMessage(msg);
 				}
-				$('.serverErrorMsg').css("margin-top","15px").show();
 			}
 		},
 		showErrorMessage: function(msg){
-			var error = '<p class="color-red">' + msg + '</p>';
-			$('.serverErrorMsg').append(error);
+			$('#errorMessage').text(msg).show();
 		},
 		hideErrorMessage: function(){
-			$('.serverErrorMsg').hide();
+			$('#errorMessage').text("").hide();
 		},
 		errormsgclose: function() {
 			$('.notification_inner').hide(500);
@@ -142,21 +146,29 @@ define(
 			//Validate Username
 			var username = $('#username');
 			if(username.val().trim() == ""){
-				username.next().text("Username is required");
+				$('.userNameInputErrorMessage').text("Please enter your email");
+				$('.userNameLabel').addClass("color-red");
+				$('#username').addClass('errorBackgroundLine');
 				allValid = false;
 				event.preventDefault();
 			} else {
-				username.next().text("");
+				$('.userNameInputErrorMessage').text("");
+				$('.userNameLabel').removeClass("color-red");
+				$('#username').removeClass('errorBackgroundLine');
 			}
 			
 			//Validate Password
 			var password = $('#password');
 			if(password.val().trim() == ""){
-				password.next().text("Password is required");
+				$('.passwordInputErrorMessage').text("Please enter your password");
+				$('.passwordLabel').addClass("color-red");
+				$('#password').addClass('errorBackgroundLine');
 				allValid = false;
 				event.preventDefault();
 			}else {
-				password.next().text("");
+				$('.passwordInputErrorMessage').text("");
+				$('.passwordLabel').removeClass("color-red");
+				$('#password').removeClass('errorBackgroundLine');
 			}
 		}
 	});

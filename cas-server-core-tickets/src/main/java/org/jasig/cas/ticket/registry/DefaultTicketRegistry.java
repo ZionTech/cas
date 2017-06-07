@@ -302,10 +302,9 @@ public final class DefaultTicketRegistry extends AbstractTicketRegistry implemen
                     logger.warn("Unknown ticket type [{} found to clean", ticket.getClass().getSimpleName());
                 }
             }
-            logger.trace("ticket removed ServiceTickets: {}, ProxyTickets: {}, TicketGrantingTicket: {}, ProxyGrantingTickets: {} ", stCount, ptCount, tgtCount, pgtCount);
+            logger.info("ticket removed ServiceTickets: {}, ProxyTickets: {}, TicketGrantingTicket: {}, ProxyGrantingTickets: {} ", stCount, ptCount, tgtCount, pgtCount);
             int totalCount = stCount + ptCount + pgtCount + tgtCount;
             logger.info("{} expired tickets found and removed.", totalCount);
-            logger.trace("{} expired tickets found and removed.", totalCount);
         } catch (final Exception e) {
             logger.error(e.getMessage(), e);
         }

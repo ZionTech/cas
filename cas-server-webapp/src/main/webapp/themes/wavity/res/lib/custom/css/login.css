@@ -136,6 +136,10 @@ body {
 	font-size: 16px !important;
 }
 
+.text-20 {
+	font-size: 20px !important;
+}
+
 .serverErrorMsg {
 	margin-top: 15px;
 	min-height: 40px;

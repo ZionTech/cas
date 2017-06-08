@@ -286,7 +286,7 @@ public final class CentralAuthenticationServiceImpl extends AbstractCentralAuthe
             throws AuthenticationException, AbstractTicketException {
 
         final ServiceTicket serviceTicket =  this.ticketRegistry.getTicket(serviceTicketId, ServiceTicket.class);
-
+        
         if (serviceTicket == null || serviceTicket.isExpired()) {
             logger.debug("ServiceTicket [{}] has expired or cannot be found in the ticket registry", serviceTicketId);
             throw new InvalidTicketException(serviceTicketId);
@@ -307,7 +307,8 @@ public final class CentralAuthenticationServiceImpl extends AbstractCentralAuthe
         final ProxyGrantingTicket proxyGrantingTicket = factory.create(serviceTicket, authentication);
 
         logger.debug("Generated proxy granting ticket [{}] based off of [{}]", proxyGrantingTicket, serviceTicketId);
-        this.ticketRegistry.addTicket(proxyGrantingTicket);
+        if(serviceTicket.getGrantingTicket().isRoot())
+        	this.ticketRegistry.addTicket(proxyGrantingTicket);
 
         doPublishEvent(new CasProxyGrantingTicketCreatedEvent(this, proxyGrantingTicket));
 

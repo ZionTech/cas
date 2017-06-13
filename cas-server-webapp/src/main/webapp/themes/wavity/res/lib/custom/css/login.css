@@ -23,11 +23,10 @@ body {
 }
 
 .contentbox {
-	height: 350px;
+	min-height: 350px;
 	max-width: 550px;
 	padding: 30px 30px 30px 30px;
 	box-shadow: 2px 2px 3px 3px #d3d3d3;
-	max-width: 550px;
 }
 
 .externalLinks {
@@ -137,6 +136,13 @@ body {
 	font-size: 16px !important;
 }
 
+.text-20 {
+	font-size: 20px !important;
+}
+
 .serverErrorMsg {
 	margin-top: 15px;
+	min-height: 40px;
 }
+
+

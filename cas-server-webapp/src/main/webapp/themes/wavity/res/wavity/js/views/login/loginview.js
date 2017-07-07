@@ -29,6 +29,7 @@ define(
 			"focus #username": "usernameFocus",
 			"blur #username": "usernameBlur",
 			"focus #password": "passwordFocus",
+			"change #password": "checkPasswordFormInput",
 			"blur #password": "passwordBlur",
 			"submit #loginForm" : "login"
 		},
@@ -55,11 +56,18 @@ define(
 			this.addForgetPasswordLink();
 			this.checkLoginErrorMessage();
 			this.focusUserNameInput();
+			this.checkPasswordFormInput();
 		},
 		focusUserNameInput: function(event){
 			setTimeout(function(){
 				$('#username').focus();
 			}, 500);
+		},
+		checkPasswordFormInput: function(){
+			var password = $('#password').val();
+			if(password != ""){
+				$('.passwordLabel').show();
+			}
 		},
 		usernameFocus: function(event){
 			$('.userNameLabel').show();

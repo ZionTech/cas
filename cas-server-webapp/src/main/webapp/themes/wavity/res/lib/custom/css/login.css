@@ -72,10 +72,6 @@ body {
 	border-color: rgb(0, 150, 207) !important;
 }
 
-#login-main .textFields input:-webkit-autofill {
-	-webkit-box-shadow: 0 0 0 30px white inset !important;
-}
-
 #login-main #loginForm .btn {
 	color: black;
 	background: transparent;
